@@ -1,0 +1,2502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cafe Studio</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono&display=swap');
+
+:root {
+  --espresso: #1C110A;
+  --roast:    #6B3A1F;
+  --gold:     #C4922A;
+  --gold-lt:  #F5E6C8;
+  --cream:    #FAF7F2;
+  --sage:     #4A7050;
+  --sage-lt:  #E8F0E8;
+  --warm-gray:#8C8074;
+  --border:   rgba(108,88,60,0.15);
+  --border-md:rgba(108,88,60,0.28);
+  --surface:  #FFFFFF;
+  --bg:       #F7F3ED;
+  --text:     #1C110A;
+  --text-2:   #6B5040;
+  --text-3:   #8C7060;
+  --radius:   10px;
+  --radius-lg:16px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Shell ── */
+.shell{display:grid;grid-template-columns:220px 1fr;grid-template-rows:56px 1fr;height:100vh;overflow:hidden}
+
+/* ── Top bar ── */
+.topbar{grid-column:1/-1;display:flex;align-items:center;gap:16px;padding:0 24px;background:var(--espresso);border-bottom:1px solid rgba(255,255,255,.08)}
+.api-key-wrap{display:flex;align-items:center;gap:8px;margin-left:auto}
+.api-key-input{background:rgba(255,255,255,.08);border:0.5px solid rgba(255,255,255,.15);border-radius:6px;color:#FAF7F2;font-family:'DM Mono',monospace;font-size:11px;padding:5px 10px;width:220px;outline:none}
+.api-key-input::placeholder{color:rgba(250,247,242,.35)}
+.api-key-input:focus{border-color:rgba(196,146,42,.6);background:rgba(255,255,255,.12)}
+.api-key-status{font-size:11px;color:rgba(250,247,242,.4);white-space:nowrap}
+.logo{font-family:'Playfair Display',serif;font-size:18px;color:#FAF7F2;letter-spacing:.02em}
+.logo span{color:var(--gold);font-style:italic}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.role-badge{font-size:11px;padding:4px 10px;background:rgba(196,146,42,.18);color:var(--gold);border-radius:20px;letter-spacing:.04em;text-transform:uppercase}
+.day-badge{font-size:12px;color:rgba(250,247,242,.5);font-family:'DM Mono',monospace}
+
+/* ── Sidebar ── */
+.sidebar{background:var(--espresso);padding:20px 0;overflow-y:auto;border-right:1px solid rgba(255,255,255,.06)}
+.nav-section{padding:6px 16px 4px;font-size:10px;color:rgba(250,247,242,.35);text-transform:uppercase;letter-spacing:.08em;margin-top:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 20px;font-size:13px;color:rgba(250,247,242,.65);cursor:pointer;transition:all .14s;border-left:2px solid transparent}
+.nav-item:hover{color:#FAF7F2;background:rgba(255,255,255,.06)}
+.nav-item.active{color:#FAF7F2;background:rgba(196,146,42,.12);border-left-color:var(--gold)}
+.nav-icon{width:16px;height:16px;opacity:.7;font-size:15px;display:flex;align-items:center;justify-content:center}
+.nav-item.active .nav-icon{opacity:1}
+
+/* ── Main area ── */
+.main{overflow-y:auto;background:var(--bg)}
+.page{display:none;padding:28px 32px;animation:fadeIn .18s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ── Page headers ── */
+.page-header{margin-bottom:24px}
+.page-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:500;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--text-2)}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+.card-sm{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.section-label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:10px;font-weight:500}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.stat-card{background:var(--bg);border-radius:var(--radius);padding:14px}
+.stat-label{font-size:11px;color:var(--text-3);margin-bottom:4px}
+.stat-value{font-size:22px;font-weight:500}
+.stat-value.gold{color:var(--gold)}
+.stat-value.sage{color:var(--sage)}
+
+/* ── Inputs ── */
+input,select,textarea{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:var(--surface);border:0.5px solid var(--border-md);border-radius:8px;padding:8px 12px;width:100%;transition:border .14s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
+textarea{resize:vertical;min-height:70px;line-height:1.55}
+label{font-size:12px;color:var(--text-2);display:block;margin-bottom:5px}
+.input-group{margin-bottom:14px}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+
+/* ── Buttons ── */
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .14s;font-family:'DM Sans',sans-serif;border:0.5px solid var(--border-md);background:var(--surface);color:var(--text)}
+.btn:hover{background:var(--bg)}
+.btn-primary{background:var(--espresso);color:#FAF7F2;border-color:var(--espresso)}
+.btn-primary:hover{background:var(--roast)}
+.btn-gold{background:var(--gold);color:#FFF8EE;border-color:var(--gold)}
+.btn-gold:hover{background:#B5841F}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+
+/* ── Tags / badges ── */
+.badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-gold{background:var(--gold-lt);color:#7B4A1E}
+.badge-sage{background:var(--sage-lt);color:#2D5A28}
+.badge-gray{background:#F0EDE8;color:var(--text-2)}
+
+/* ════════════════════════════════════
+   BRANDING
+════════════════════════════════════ */
+.color-swatch{width:36px;height:36px;border-radius:8px;border:0.5px solid var(--border);cursor:pointer;transition:transform .12s}
+.color-swatch:hover{transform:scale(1.1)}
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.font-preview{padding:10px 14px;border:0.5px solid var(--border);border-radius:8px;margin-bottom:8px;cursor:pointer;transition:border-color .12s}
+.font-preview:hover,.font-preview.selected{border-color:var(--gold);background:var(--gold-lt)}
+.brand-preview-box{border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-top:20px}
+.brand-preview-header{height:56px;display:flex;align-items:center;justify-content:center;font-size:20px;letter-spacing:.04em}
+.brand-preview-body{padding:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.menu-item-preview{padding:12px;border:0.5px solid var(--border);border-radius:8px;background:var(--surface)}
+.menu-item-preview .name{font-size:14px;font-weight:500;margin-bottom:2px}
+.menu-item-preview .price{font-size:13px;color:var(--text-2)}
+.tagline-text{font-size:11px;color:var(--text-3);text-align:center;padding:6px 0 12px;font-style:italic}
+
+/* ════════════════════════════════════
+   FLOOR PLAN
+════════════════════════════════════ */
+.floor-canvas-wrap{border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;background:#FDFCFA}
+.floor-toolbar{padding:10px 16px;background:var(--bg);border-bottom:0.5px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.zone-chip{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:0.5px solid var(--border-md);background:var(--surface);color:var(--text-2);transition:all .12s}
+.zone-chip:hover,.zone-chip.active{background:var(--espresso);color:#FAF7F2;border-color:var(--espresso)}
+.canvas-toolbar{display:flex;gap:6px;align-items:center;padding:8px 16px;background:var(--bg);border-bottom:0.5px solid var(--border);flex-wrap:wrap}
+.add-zone-btn{padding:5px 11px;font-size:11px;border-radius:6px;border:0.5px solid var(--border-md);background:var(--surface);color:var(--text-2);cursor:pointer;transition:all .12s}
+.add-zone-btn:hover{background:var(--gold-lt);color:#7B4A1E;border-color:#D4A84B}
+#floorCanvas{display:block;width:100%;cursor:default;touch-action:none}
+.floor-legend{display:flex;flex-wrap:wrap;gap:10px;padding:10px 16px;border-top:0.5px solid var(--border)}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-2)}
+.legend-dot{width:10px;height:10px;border-radius:2px}
+.floor-hint{padding:6px 16px;font-size:11px;color:var(--text-3);background:var(--bg);border-top:0.5px solid var(--border);display:flex;gap:16px;flex-wrap:wrap}
+.zone-info-bar{padding:6px 16px;font-size:12px;color:#7B4A1E;background:var(--gold-lt);border-top:0.5px solid #D4A84B;display:none}
+.sim-feedback-area{margin-top:16px;border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.sim-feedback-header{padding:10px 16px;background:var(--bg);border-bottom:0.5px solid var(--border);font-size:12px;font-weight:500}
+.sim-feedback-body{padding:14px 16px;font-size:13px;color:var(--text-2);line-height:1.65;min-height:80px}
+.customer-comment{display:flex;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--border)}
+.customer-comment:last-child{border-bottom:none}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--gold-lt);color:#7B4A1E;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.comment-body .name{font-size:12px;font-weight:500;margin-bottom:2px}
+.comment-body .text{font-size:13px;color:var(--text-2);line-height:1.5}
+.stars{color:var(--gold);font-size:12px;letter-spacing:1px}
+
+/* ════════════════════════════════════
+   EQUIPMENT / FURNITURE
+════════════════════════════════════ */
+.eq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.eq-card{border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:16px;background:var(--surface);cursor:pointer;transition:border-color .14s;display:flex;flex-direction:column}
+.eq-card:hover{border-color:var(--gold)}
+.eq-card.selected{border:1.5px solid var(--gold);background:var(--gold-lt)}
+.eq-icon{width:36px;height:36px;border-radius:8px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:18px;margin-bottom:8px}
+.eq-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.eq-sub{font-size:11px;color:var(--text-3);margin-bottom:6px}
+.eq-badges{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:7px}
+.eq-badge{font-size:10px;padding:2px 7px;border-radius:10px;background:var(--espresso);color:var(--gold-lt);font-weight:500}
+.eq-card.selected .eq-badge{background:var(--roast);color:#FFF8EE}
+.eq-role{font-size:11px;color:var(--text-2);line-height:1.5;flex:1}
+.eq-price{font-size:13px;font-weight:500;color:var(--roast)}
+.eq-range{font-size:11px;color:var(--text-3)}
+.budget-bar-wrap{margin-top:20px}
+.budget-bar-track{height:8px;background:#EDE9E2;border-radius:4px;overflow:hidden;margin-top:6px}
+.budget-bar-fill{height:100%;border-radius:4px;background:var(--gold);transition:width .3s}
+.budget-bar-fill.over{background:#C0607A}
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+
+/* ════════════════════════════════════
+   FINANCIAL CALCULATOR
+════════════════════════════════════ */
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.range-row{margin-bottom:16px}
+.range-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-2);margin-bottom:6px}
+.range-label span:last-child{font-weight:500;color:var(--text)}
+input[type=range]{-webkit-appearance:none;width:100%;height:4px;background:#EDE9E2;border-radius:2px;border:none;padding:0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;border:2px solid #FFF}
+.cashflow-bars{display:flex;align-items:flex-end;gap:4px;height:80px;margin-top:8px}
+.cf-bar{flex:1;border-radius:3px 3px 0 0;transition:height .3s,background .3s;min-width:0}
+.profit-indicator{padding:14px 16px;border-radius:var(--radius);margin-top:16px}
+.profit-indicator.positive{background:var(--sage-lt);border:0.5px solid #9AC48A}
+.profit-indicator.negative{background:#FDE8F0;border:0.5px solid #E09485}
+.profit-label{font-size:11px;color:var(--text-2);margin-bottom:3px}
+.profit-value{font-size:24px;font-weight:500}
+.profit-value.pos{color:var(--sage)}
+.profit-value.neg{color:#C0607A}
+
+/* ════════════════════════════════════
+   BEAN MENU / SIMULATION
+════════════════════════════════════ */
+.bean-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+.bean-card{border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px;background:var(--surface);cursor:pointer;transition:all .14s}
+.bean-card:hover{border-color:var(--gold)}
+.bean-card.selected{border:1.5px solid var(--gold);background:var(--gold-lt)}
+.bean-origin{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:4px}
+.bean-name{font-size:13px;font-weight:500;margin-bottom:6px}
+.bean-stats{display:flex;gap:8px;flex-wrap:wrap}
+.bean-stat{font-size:10px;padding:2px 7px;border-radius:10px;background:var(--bg);color:var(--text-2)}
+.sim-output{border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-top:16px}
+.sim-output-header{background:var(--espresso);padding:12px 16px;color:#FAF7F2;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}
+.sim-pulse{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.sim-output-body{padding:16px;min-height:120px;font-size:13px;color:var(--text-2);line-height:1.7}
+.typing::after{content:'|';animation:blink .6s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ════════════════════════════════════
+   LOADING SPINNER
+════════════════════════════════════ */
+.spinner{width:18px;height:18px;border:2px solid var(--gold-lt);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.divider{height:0.5px;background:var(--border);margin:20px 0}
+.ops-big{font-size:32px;font-weight:500;margin:6px 0 2px;line-height:1}
+.ops-sub{font-size:12px;color:var(--text-3);margin-bottom:8px}
+.ops-detail{font-size:11px;color:var(--text-2);line-height:1.6;margin-top:6px;padding-top:6px;border-top:0.5px solid var(--border)}
+.ops-wait-track{height:6px;background:#EDE9E2;border-radius:3px;overflow:hidden;margin-top:6px}
+.ops-wait-fill{height:100%;border-radius:3px;transition:width .4s,background .4s}
+
+/* ── Tooltips ── */
+.tip{display:inline-flex;align-items:center;gap:4px;cursor:default}
+.tip-icon{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--border-md);color:var(--text-3);font-size:9px;font-weight:500;font-style:normal;line-height:1;flex-shrink:0;transition:background .12s}
+.tip:hover .tip-icon{background:var(--gold);color:#FFF8EE}
+.tip-wrap{position:relative;display:inline-flex;align-items:center}
+.tip-wrap .tip-box{
+  display:none;
+  position:absolute;
+  bottom:calc(100% + 8px);
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--espresso);
+  color:#FAF7F2;
+  font-size:12px;
+  line-height:1.55;
+  padding:10px 13px;
+  border-radius:8px;
+  width:220px;
+  z-index:99;
+  pointer-events:none;
+  font-weight:400;
+}
+.tip-wrap .tip-box::after{
+  content:'';
+  position:absolute;
+  top:100%;
+  left:50%;
+  transform:translateX(-50%);
+  border:5px solid transparent;
+  border-top-color:var(--espresso);
+}
+.tip-wrap:hover .tip-box{display:block}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="logo">Saba <span>Cafe</span></div>
+  <div class="topbar-right">
+    <span class="role-badge">Manager & Lead Barista</span>
+    <span class="day-badge" id="simDay">Day 1</span>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="nav-section">Studio</div>
+  <div class="nav-item active" onclick="nav('branding',this)">
+    <span class="nav-icon">◈</span> Branding
+  </div>
+  <div class="nav-item" onclick="nav('layout',this)">
+    <span class="nav-icon">⊞</span> Interior layout
+  </div>
+  <div class="nav-section">Sourcing</div>
+  <div class="nav-item" onclick="nav('beans',this)">
+    <span class="nav-icon">◉</span> Bean selection
+  </div>
+  <div class="nav-item" onclick="nav('equipment',this)">
+    <span class="nav-icon">⊙</span> Equipment
+  </div>
+  <div class="nav-item" onclick="nav('furniture',this)">
+    <span class="nav-icon">⊡</span> Furniture
+  </div>
+  <div class="nav-section">Operations</div>
+  <div class="nav-item" onclick="nav('ops',this)">
+    <span class="nav-icon">⏱</span> Throughput & capacity
+  </div>
+  <div class="nav-item" onclick="nav('finance',this)">
+    <span class="nav-icon">⊟</span> Financials
+  </div>
+  <div class="nav-item" onclick="nav('simulation',this)">
+    <span class="nav-icon">▷</span> Run simulation
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+<!-- ══ BRANDING ══════════════════════════════════════════ -->
+<div id="page-branding" class="page active">
+  <div class="page-header">
+    <div class="page-title">Branding studio</div>
+    <div class="page-sub">Design your cafe's identity — name, colors, fonts, and tagline</div>
+  </div>
+  <div class="grid-2" style="align-items:start">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="section-label">Cafe identity</div>
+        <div class="input-group">
+          <label>Cafe name</label>
+          <input type="text" id="cafeName" value="Saba Cafe" oninput="updateBrand()">
+        </div>
+        <div class="input-group">
+          <label>Tagline</label>
+          <input type="text" id="cafeTagline" value="Single origin. Slow ritual." oninput="updateBrand()">
+        </div>
+        <div class="input-group">
+          <label>Neighborhood / vibe</label>
+          <input type="text" id="cafeVibe" value="Warm industrial, East African roots" oninput="updateBrand()">
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="section-label">Brand colors</div>
+        <div class="color-row" id="colorRow">
+          <div class="color-swatch" style="background:#1C110A" title="Espresso" onclick="setPrimary('#1C110A','#FAF7F2')" data-c="#1C110A"></div>
+          <div class="color-swatch" style="background:#6B3A1F" title="Roast" onclick="setPrimary('#6B3A1F','#FAF7F2')" data-c="#6B3A1F"></div>
+          <div class="color-swatch" style="background:#C4922A" title="Gold" onclick="setPrimary('#C4922A','#FFF8EE')" data-c="#C4922A"></div>
+          <div class="color-swatch" style="background:#4A7050" title="Sage" onclick="setPrimary('#4A7050','#FAF7F2')" data-c="#4A7050"></div>
+          <div class="color-swatch" style="background:#3B6BD4" title="Blue" onclick="setPrimary('#3B6BD4','#FAF7F2')" data-c="#3B6BD4"></div>
+          <div class="color-swatch" style="background:#2C2C2A" title="Charcoal" onclick="setPrimary('#2C2C2A','#FAF7F2')" data-c="#2C2C2A"></div>
+          <div class="color-swatch" style="background:#7A3D5C" title="Berry" onclick="setPrimary('#7A3D5C','#FAF7F2')" data-c="#7A3D5C"></div>
+          <div class="color-swatch" style="background:#B8860B" title="Warm gold" onclick="setPrimary('#B8860B','#FAF7F2')" data-c="#B8860B"></div>
+        </div>
+        <div style="margin-top:14px">
+          <label>Accent color (hex)</label>
+          <input type="text" id="accentColor" value="#C4922A" oninput="updateBrand()" style="font-family:'DM Mono',monospace">
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-label">Display font</div>
+        <div class="font-preview selected" onclick="setFont('Playfair Display',this)" id="fp-playfair" style="font-family:'Playfair Display',serif;font-size:18px">Playfair Display — The ritual of the cup</div>
+        <div class="font-preview" onclick="setFont('DM Serif Display',this)" id="fp-dm" style="font-family:'Playfair Display',serif;font-size:17px;font-style:italic">DM Serif — A cup worth savouring</div>
+        <div class="font-preview" onclick="setFont('Georgia',this)" id="fp-geo" style="font-family:Georgia,serif;font-size:17px">Georgia — Rooted in origin</div>
+        <div class="font-preview" onclick="setFont('DM Sans',this)" id="fp-sans" style="font-family:'DM Sans',sans-serif;font-size:17px;font-weight:300;letter-spacing:.06em">DM Sans — Clean. Minimal. Specialty.</div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <div class="section-label">Live preview</div>
+        <div class="brand-preview-box" id="brandPreview">
+          <div class="brand-preview-header" id="previewHeader" style="background:#1C110A;color:#FAF7F2;font-family:'Playfair Display',serif">
+            Saba Cafe
+          </div>
+          <div class="tagline-text" id="previewTagline">Single origin. Slow ritual.</div>
+          <div class="brand-preview-body">
+            <div class="menu-item-preview">
+              <div class="name" id="mi1name">Yirgacheffe Pour-Over</div>
+              <div class="price">$7.50 · Natural process</div>
+              <div style="font-size:11px;color:var(--text-3);margin-top:4px">Blueberry · Jasmine · Bright finish</div>
+            </div>
+            <div class="menu-item-preview">
+              <div class="name">Sidama Espresso</div>
+              <div class="price">$5.00 · Medium roast</div>
+              <div style="font-size:11px;color:var(--text-3);margin-top:4px">Stone fruit · Caramel · Smooth body</div>
+            </div>
+            <div class="menu-item-preview">
+              <div class="name">Oat Latte</div>
+              <div class="price">$6.50 · Seasonal</div>
+              <div style="font-size:11px;color:var(--text-3);margin-top:4px">Creamy · Nutty · Ethiopian base</div>
+            </div>
+            <div class="menu-item-preview">
+              <div class="name">Ceremonial Matcha</div>
+              <div class="price">$6.00 · Okumidori</div>
+              <div style="font-size:11px;color:var(--text-3);margin-top:4px">Umami · Nutty · Rich</div>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" onclick="sendPrompt('Generate 3 alternative cafe name ideas and taglines for my specialty Ethiopian coffee cafe with a warm industrial vibe. Keep them short and evocative.')">Suggest names ↗</button>
+          <button class="btn btn-sm" onclick="sendPrompt('Write a short brand story (3-4 sentences) for my specialty cafe called ' + document.getElementById(\'cafeName\').value + ' with the tagline: ' + document.getElementById(\'cafeTagline\').value)">Write brand story ↗</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LAYOUT ═════════════════════════════════════════════ -->
+<div id="page-layout" class="page">
+  <div class="page-header">
+    <div class="page-title">Interior layout</div>
+    <div class="page-sub">Design your floor plan and run customer simulations to get feedback</div>
+  </div>
+  <div class="grid-2" style="align-items:start;gap:20px">
+    <div>
+      <div class="floor-canvas-wrap">
+        <div class="floor-toolbar">
+          <span style="font-size:12px;color:var(--text-2);margin-right:4px">Size:</span>
+          <div class="zone-chip active" onclick="setLayout('cozy',this)">800 sqft</div>
+          <div class="zone-chip" onclick="setLayout('medium',this)">1,200 sqft</div>
+          <div class="zone-chip" onclick="setLayout('open',this)">1,800 sqft</div>
+          <span style="margin-left:auto;font-size:11px;color:var(--text-3)">Grid: <input type="checkbox" id="snapToggle" checked onchange="toggleSnap(this)"> snap</span>
+        </div>
+        <div class="canvas-toolbar">
+          <span style="font-size:11px;color:var(--text-3);margin-right:2px">Add zone:</span>
+          <button class="add-zone-btn" onclick="addZone('bar')">+ Bar</button>
+          <button class="add-zone-btn" onclick="addZone('seating')">+ Seating</button>
+          <button class="add-zone-btn" onclick="addZone('lounge')">+ Lounge</button>
+          <button class="add-zone-btn" onclick="addZone('prep')">+ Prep</button>
+          <button class="add-zone-btn" onclick="addZone('retail')">+ Retail</button>
+          <button class="add-zone-btn" onclick="addZone('wc')">+ WC</button>
+          <button class="add-zone-btn" onclick="rotateSelectedCCW()" title="Rotate 90° counter-clockwise">↺ Rotate CCW</button><button class="add-zone-btn" onclick="rotateSelectedCW()" title="Rotate 90° clockwise">↻ Rotate CW</button><button class="add-zone-btn" style="margin-left:auto;color:#C0607A;border-color:#E09485" onclick="deleteSelected()">Delete selected</button>
+          <button class="add-zone-btn" onclick="resetLayout()">Reset</button>
+        </div>
+        <canvas id="floorCanvas" height="420"></canvas>
+        <div class="zone-info-bar" id="zoneInfoBar"></div>
+        <div class="floor-hint">
+          <span>Drag to move</span>
+          <span>Drag corner/edge to resize</span>
+          <span>Drag ↻ handle or press R to rotate</span>
+          <span>Del to delete</span>
+        </div>
+        <div class="floor-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#D4A84B"></div>Bar</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#7A9ED0"></div>Prep</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#7FAA70"></div>Seating</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#C4922A"></div>Window bar</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#9B72BB"></div>Lounge</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#C0607A"></div>Retail</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#AAAAAA"></div>WC</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="section-label">Layout priorities</div>
+        <div class="input-group">
+          <label>Seating style</label>
+          <select id="seatStyle">
+            <option>Mixed — tables, bar stools, lounge chairs</option>
+            <option>Communal tables focus</option>
+            <option>Individual pour-over bar focus</option>
+            <option>Work-friendly with power outlets</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Atmosphere priority</label>
+          <select id="atmosPriority">
+            <option>Third-wave specialty — education & ritual</option>
+            <option>Social hub — community & events</option>
+            <option>Work cafe — quiet, focused</option>
+            <option>Neighborhood staple — fast & friendly</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Notes for simulation</label>
+          <textarea id="layoutNotes" placeholder="Describe what's important to you about the space — natural light, Ethiopian art, open kitchen view...">Natural light from west-facing windows. Ethiopian artwork and coffee ceremony display near entrance. Open bar so customers can watch the pour-over process.</textarea>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="runLayoutSim()">
+        Run customer simulation ↗
+      </button>
+      <div class="sim-feedback-area" id="layoutSimOutput" style="display:none">
+        <div class="sim-feedback-header">Customer simulation results</div>
+        <div class="sim-feedback-body" id="layoutSimBody">
+          <div id="customerComments"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BEANS ══════════════════════════════════════════════ -->
+<div id="page-beans" class="page">
+  <div class="page-header">
+    <div class="page-title">Bean selection</div>
+    <div class="page-sub">Choose your menu beans — pulled from your CQI analysis. Click to select for simulation.</div>
+  </div>
+  <div class="bean-grid" id="beanGrid"></div>
+  <div class="card" id="beanSimCard" style="display:none">
+    <div class="section-label">Pricing simulator</div>
+    <div class="grid-2">
+      <div>
+        <div class="range-row">
+          <div class="range-label"><span>Pour-over price</span><span id="pourPrice">$7.50</span></div>
+          <input type="range" min="5" max="15" value="7.5" step="0.5" oninput="updateBeanPrices(this,'pourPrice','$')">
+        </div>
+        <div class="range-row">
+          <div class="range-label"><span>Espresso price</span><span id="espPrice">$5.00</span></div>
+          <input type="range" min="3" max="10" value="5" step="0.5" oninput="updateBeanPrices(this,'espPrice','$')">
+        </div>
+        <div class="range-row">
+          <div class="range-label"><span>Latte price</span><span id="lattePrice">$6.50</span></div>
+          <input type="range" min="4" max="12" value="6.5" step="0.5" oninput="updateBeanPrices(this,'lattePrice','$')">
+        </div>
+      </div>
+      <div>
+        <div class="stat-card">
+          <div class="stat-label">
+            <span class="tip-wrap">Avg ticket
+              <span class="tip-box">Average spend per customer visit across your menu mix. Blend of pour-over, espresso, and latte prices weighted equally here. Raise it by upselling pastries or offering tasting flights.</span>
+              <span class="tip-icon">?</span>
+            </span>
+          </div>
+          <div class="stat-value gold" id="avgTicket">$6.67</div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="stat-card">
+          <div class="stat-label">
+            <span class="tip-wrap">Est. food cost %
+              <span class="tip-box">Estimated COGS as a % of your avg ticket — the direct cost of beans, milk, and packaging per drink. Specialty single-origins push this toward 30–35%. If this climbs above 40%, your pricing likely needs to rise.</span>
+              <span class="tip-icon">?</span>
+            </span>
+          </div>
+          <div class="stat-value" id="foodCostPct">28%</div>
+        </div>
+        <div style="height:10px"></div>
+        <div class="stat-card">
+          <div class="stat-label">
+            <span class="tip-wrap">Margin per cup
+              <span class="tip-box">Gross profit on a single average drink — avg ticket minus estimated COGS. This is what goes toward covering rent, wages, and utilities before net profit. Target $4.50–$6.00 for a healthy specialty cafe.</span>
+              <span class="tip-icon">?</span>
+            </span>
+          </div>
+          <div class="stat-value sage" id="marginPerCup">$4.81</div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-sm" onclick="sendPrompt('Based on my Ethiopian specialty coffee cafe with a warm industrial vibe, what pricing strategy would you recommend for single-origin pour-overs? My current prices are: pour-over $' + document.getElementById(\'pourPrice\').textContent + ', espresso $' + document.getElementById(\'espPrice\').textContent + ', latte $' + document.getElementById(\'lattePrice\').textContent)">Get pricing advice ↗</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EQUIPMENT ══════════════════════════════════════════ -->
+<div id="page-equipment" class="page">
+  <div class="page-header">
+    <div class="page-title">Equipment</div>
+    <div class="page-sub">Select equipment for your cafe. Total updates your financial model.</div>
+  </div>
+  <div class="filter-row">
+    <div class="zone-chip active" onclick="filterEq('all',this)">All</div>
+    <div class="zone-chip" onclick="filterEq('espresso',this)">Espresso</div>
+    <div class="zone-chip" onclick="filterEq('brewing',this)">Brewing</div>
+    <div class="zone-chip" onclick="filterEq('refrigeration',this)">Refrigeration</div>
+    <div class="zone-chip" onclick="filterEq('pos',this)">POS & tech</div>
+    <div class="zone-chip" onclick="filterEq('misc',this)">Misc</div>
+  </div>
+  <div class="budget-bar-wrap card" style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="section-label" style="margin:0">Equipment budget</div>
+      <div style="font-size:13px"><span id="eqSpend" style="font-weight:500">$0</span> <span style="color:var(--text-3)">of <span id="eqBudget">$35,000</span></span></div>
+    </div>
+    <div class="budget-bar-track"><div class="budget-bar-fill" id="eqBar" style="width:0%"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:8px">
+      <label style="margin:0;font-size:11px">Budget limit</label>
+      <input type="range" min="10000" max="80000" step="1000" value="35000" style="width:200px" oninput="updateEqBudget(this)">
+    </div>
+  </div>
+  <div class="eq-grid" id="eqGrid"></div>
+</div>
+
+<!-- ══ FURNITURE ══════════════════════════════════════════ -->
+<div id="page-furniture" class="page">
+  <div class="page-header">
+    <div class="page-title">Furniture & decor</div>
+    <div class="page-sub">Choose furniture that matches your brand. Budget tracks automatically.</div>
+  </div>
+  <div class="filter-row">
+    <div class="zone-chip active" onclick="filterFurn('all',this)">All</div>
+    <div class="zone-chip" onclick="filterFurn('seating',this)">Seating</div>
+    <div class="zone-chip" onclick="filterFurn('tables',this)">Tables</div>
+    <div class="zone-chip" onclick="filterFurn('bar',this)">Bar</div>
+    <div class="zone-chip" onclick="filterFurn('lighting',this)">Lighting</div>
+    <div class="zone-chip" onclick="filterFurn('decor',this)">Decor</div>
+  </div>
+  <div class="budget-bar-wrap card" style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="section-label" style="margin:0">Furniture budget</div>
+      <div style="font-size:13px"><span id="furnSpend" style="font-weight:500">$0</span> <span style="color:var(--text-3)">of <span id="furnBudget">$15,000</span></span></div>
+    </div>
+    <div class="budget-bar-track"><div class="budget-bar-fill" id="furnBar" style="width:0%"></div></div>
+    <div style="display:flex;justify-content:space-between;margin-top:8px">
+      <label style="margin:0;font-size:11px">Budget limit</label>
+      <input type="range" min="5000" max="40000" step="500" value="15000" style="width:200px" oninput="updateFurnBudget(this)">
+    </div>
+  </div>
+  <div class="eq-grid" id="furnGrid"></div>
+</div>
+
+<!-- ══ THROUGHPUT & CAPACITY ════════════════════════════ -->
+<div id="page-ops" class="page">
+  <div class="page-header">
+    <div class="page-title">Throughput & capacity</div>
+    <div class="page-sub">Live calculations from your equipment selections, floor plan zones, and staff count</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+    <!-- Espresso throughput -->
+    <div class="card">
+      <div class="section-label">
+        <span class="tip-wrap">Espresso throughput
+          <span class="tip-box">How many espresso shots your equipment can physically produce per hour, accounting for realistic cycle time including dosing, tamping, pulling, and knockouts. Each latte or cappuccino requires 1–2 shots.</span>
+          <span class="tip-icon">?</span>
+        </span>
+      </div>
+      <div class="ops-big" id="ops-shotsHr">—</div>
+      <div class="ops-sub" id="ops-shotsHrSub">shots per hour (realistic)</div>
+      <div class="ops-detail" id="ops-espDetail"></div>
+    </div>
+
+    <!-- Pour-over throughput -->
+    <div class="card">
+      <div class="section-label">
+        <span class="tip-wrap">Pour-over throughput
+          <span class="tip-box">How many individual pour-over cups you can brew per hour across all your pour-over equipment. V60 brews in ~3.5 min, Chemex in ~4 min. One barista can stagger multiple brewers simultaneously.</span>
+          <span class="tip-icon">?</span>
+        </span>
+      </div>
+      <div class="ops-big" id="ops-pourHr">—</div>
+      <div class="ops-sub" id="ops-pourHrSub">pour-over cups per hour</div>
+      <div class="ops-detail" id="ops-pourDetail"></div>
+    </div>
+
+    <!-- Estimated wait time -->
+    <div class="card">
+      <div class="section-label">
+        <span class="tip-wrap">Estimated wait time
+          <span class="tip-box">Average time from ordering to receiving a drink, modelled on your equipment throughput, drink mix (espresso vs pour-over vs batch), number of baristas, and customer arrival rate. Over 5 min = customers begin to leave.</span>
+          <span class="tip-icon">?</span>
+        </span>
+      </div>
+      <div class="ops-big" id="ops-waitTime" style="color:var(--sage)">—</div>
+      <div class="ops-sub">min average wait (peak hour)</div>
+      <div class="ops-wait-bar-wrap">
+        <div class="ops-wait-track"><div class="ops-wait-fill" id="ops-waitFill" style="width:0%"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-top:3px"><span>1 min</span><span>3 min ideal</span><span>8+ min critical</span></div>
+      </div>
+      <div class="ops-detail" id="ops-waitDetail"></div>
+    </div>
+
+    <!-- Max occupancy -->
+    <div class="card">
+      <div class="section-label">
+        <span class="tip-wrap">Max occupancy
+          <span class="tip-box">Maximum number of people allowed in your cafe at one time under fire code (IBC/NFPA): 20 sqft per seated person, 15 sqft per standing person. Your floor plan zone sizes drive this calculation.</span>
+          <span class="tip-icon">?</span>
+        </span>
+      </div>
+      <div class="ops-big" id="ops-maxOcc" style="color:var(--roast)">—</div>
+      <div class="ops-sub">maximum occupancy (fire code)</div>
+      <div class="ops-detail" id="ops-occDetail"></div>
+    </div>
+  </div>
+
+  <!-- Drinks per barista breakdown -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="section-label">Capacity model — adjust your drink mix</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="range-row">
+        <div class="range-label">
+          <span class="tip-wrap">Espresso drinks %
+            <span class="tip-box">What share of orders are espresso-based (espresso, latte, cappuccino, cortado). Each requires 1–2 shots and ~30–60 seconds of barista time including steaming.</span>
+            <span class="tip-icon">?</span>
+          </span>
+          <span id="ops-espPct-lbl">50%</span>
+        </div>
+        <input type="range" id="ops-espPct" min="0" max="100" step="5" value="50" oninput="calcOps()">
+      </div>
+      <div class="range-row">
+        <div class="range-label">
+          <span class="tip-wrap">Pour-over %
+            <span class="tip-box">Orders that are single-serve pour-overs. Each takes 3.5–4 min but can be staggered across multiple brewers. High pour-over % requires either more equipment or a dedicated pour-over barista.</span>
+            <span class="tip-icon">?</span>
+          </span>
+          <span id="ops-pourPct-lbl">30%</span>
+        </div>
+        <input type="range" id="ops-pourPct" min="0" max="100" step="5" value="30" oninput="calcOps()">
+      </div>
+      <div class="range-row">
+        <div class="range-label">
+          <span class="tip-wrap">Batch / drip %
+            <span class="tip-box">Orders served from a pre-brewed batch or drip setup. Near-instant service — no per-order wait. Having some batch coffee dramatically reduces peak-hour pressure on your baristas.</span>
+            <span class="tip-icon">?</span>
+          </span>
+          <span id="ops-batchPct-lbl">20%</span>
+        </div>
+        <input type="range" id="ops-batchPct" min="0" max="100" step="5" value="20" oninput="calcOps()">
+      </div>
+    </div>
+
+    <!-- Throughput summary table -->
+    <div style="overflow-x:auto">
+      <table style="width:100%;font-size:12px;border-collapse:collapse" id="ops-table">
+        <thead>
+          <tr style="border-bottom:0.5px solid var(--border)">
+            <th style="text-align:left;padding:7px 10px;font-weight:500;color:var(--text-2)">Drink type</th>
+            <th style="text-align:right;padding:7px 10px;font-weight:500;color:var(--text-2)">Time / drink</th>
+            <th style="text-align:right;padding:7px 10px;font-weight:500;color:var(--text-2)">Max / hr</th>
+            <th style="text-align:right;padding:7px 10px;font-weight:500;color:var(--text-2)">Equipment limit</th>
+            <th style="text-align:right;padding:7px 10px;font-weight:500;color:var(--text-2)">Status</th>
+          </tr>
+        </thead>
+        <tbody id="ops-tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Zone occupancy breakdown -->
+  <div class="card">
+    <div class="section-label">Floor plan zone occupancy</div>
+    <div id="ops-zoneBreakdown" style="font-size:13px;color:var(--text-2)">Load the Interior Layout tab and place zones to see occupancy calculations here.</div>
+  </div>
+</div>
+
+<!-- ══ FINANCIALS ════════════════════════════════════════ -->
+<div id="page-finance" class="page">
+  <div class="page-header">
+    <div class="page-title">Financial model</div>
+    <div class="page-sub">Adjust your assumptions. Equipment &amp; furniture selections feed in automatically. Hover any <span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:var(--border-md);color:var(--text-3);font-size:9px;font-weight:500">?</span> for a definition.</div>
+  </div>
+  <div class="fin-grid">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="section-label">Revenue inputs</div>
+
+        <div class="range-row">
+          <div class="range-label">
+            <span class="tip-wrap">
+              Daily customers
+              <span class="tip-box">How many individual people walk through your door in a day. A small specialty cafe typically sees 60–150/day. Higher foot traffic = more revenue but also more staff pressure.</span>
+              <span class="tip-icon">?</span>
+            </span>
+            <span id="r-cust-lbl">80</span>
+          </div>
+          <input type="range" id="r-cust" min="20" max="300" step="5" value="80" oninput="calcFin()">
+        </div>
+
+        <div class="range-row">
+          <div class="range-label">
+            <span class="tip-wrap">
+              Avg ticket
+              <span class="tip-box">Average amount one customer spends per visit. Calculated as total daily revenue ÷ number of customers. A drip coffee = ~$4 ticket. Pour-over + pastry = ~$13 ticket. Your bean and menu choices directly shift this number.</span>
+              <span class="tip-icon">?</span>
+            </span>
+            <span id="r-tick-lbl">$7.50</span>
+          </div>
+          <input type="range" id="r-tick" min="4" max="18" step="0.5" value="7.5" oninput="calcFin()">
+        </div>
+
+        <div class="range-row">
+          <div class="range-label">
+            <span class="tip-wrap">
+              Days open / month
+              <span class="tip-box">How many days per month you operate. Most cafes run 26–28 days (closed 2–4 days). Fewer days = lower revenue but also lower labor costs. Factor in holidays and your own rest days.</span>
+              <span class="tip-icon">?</span>
+            </span>
+            <span id="r-days-lbl">26</span>
+          </div>
+          <input type="range" id="r-days" min="20" max="31" step="1" value="26" oninput="calcFin()">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">Cost inputs</div>
+
+        <div class="range-row">
+          <div class="range-label">
+            <span class="tip-wrap">
+              Monthly rent
+              <span class="tip-box">Your lease payment for the physical space. Typically the single largest fixed cost. Industry rule of thumb: rent should be no more than 10–15% of monthly revenue. Oakland/Bay Area ranges from ~$3,500–$8,000/mo for a small cafe.</span>
+              <span class="tip-icon">?</span>
+            </span>
+            <span id="r-rent-lbl">$4,500</span>
+          </div>
+          <input type="range" id="r-rent" min="1000" max="12000" step="250" value="4500" oninput="calcFin()">
+        </div>
+
+        <div class="range-row">
+          <div class="range-label">
+            <span class="tip-wrap">
+              Staff count
+              <span class="tip-box">Number of people on payroll. This model assumes ~$1,800/mo base wage + $350/mo in taxes and benefits per person. As owner-barista you likely count yourself here. A 3-person team covers ~2 shifts with some overlap on busy mornings.</span>
+              <span class="tip-icon">?</span>
+            </span>
+            <span id="r-staff-lbl">3</span>
+          </div>
+          <input type="range" id="r-staff" min="1" max="10" step="1" value="3" oninput="calcFin();calcOps()">
+        </div>
+
+        <div class="range-row">
+          <div class="range-label">
+            <span class="tip-wrap">
+              COGS %
+              <span class="tip-box">Cost of Goods Sold — the direct cost of everything in the cup: beans, milk, syrups, cups, lids, sleeves, napkins, food ingredients. Does NOT include rent, wages, or utilities. Specialty cafes typically run 28–35%. Single-origin Ethiopian beans push this toward 32–35% unless your pricing reflects the premium.</span>
+              <span class="tip-icon">?</span>
+            </span>
+            <span id="r-cogs-lbl">32%</span>
+          </div>
+          <input type="range" id="r-cogs" min="20" max="55" step="1" value="32" oninput="calcFin()">
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="section-label">Monthly snapshot</div>
+        <div class="grid-2" style="gap:10px">
+
+          <div class="stat-card">
+            <div class="stat-label">
+              <span class="tip-wrap">
+                Monthly revenue
+                <span class="tip-box">Gross revenue before any costs. Formula: daily customers × avg ticket × days open. This is the top line — everything else gets subtracted from here.</span>
+                <span class="tip-icon">?</span>
+              </span>
+            </div>
+            <div class="stat-value gold" id="f-rev">$15,600</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">
+              <span class="tip-wrap">
+                Total costs
+                <span class="tip-box">All monthly expenses combined: COGS + labor + rent + utilities (~$1,100) + miscellaneous (~$600). What you subtract from revenue to get profit.</span>
+                <span class="tip-icon">?</span>
+              </span>
+            </div>
+            <div class="stat-value" id="f-cost">$13,200</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">
+              <span class="tip-wrap">
+                COGS (monthly $)
+                <span class="tip-box">Your COGS % applied to monthly revenue. This is what you spend on beans, milk, cups, and ingredients each month. For Ethiopian single-origins, expect your bean cost alone to be $4–8 per lb wholesale, used at ~18–21g per pour-over.</span>
+                <span class="tip-icon">?</span>
+              </span>
+            </div>
+            <div class="stat-value" id="f-cogs">$4,992</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-label">
+              <span class="tip-wrap">
+                Labor (monthly $)
+                <span class="tip-box">Total staff wages + employer taxes and benefits. Calculated as staff count × $1,800 base + $350 overhead per person. Labor is typically 25–35% of revenue for a small cafe. Below 25% usually means understaffed; above 40% is unsustainable.</span>
+                <span class="tip-icon">?</span>
+              </span>
+            </div>
+            <div class="stat-value" id="f-labor">$5,400</div>
+          </div>
+
+        </div>
+        <div class="profit-indicator positive" id="profitBox" style="margin-top:12px">
+          <div class="profit-label">
+            <span class="tip-wrap">
+              Monthly profit / loss
+              <span class="tip-box" style="bottom:auto;top:calc(100% + 8px)">Revenue minus all costs. Positive = profitable month. This is before loan repayments or owner draws — both would reduce this further. Target 10–20% net margin for a healthy specialty cafe.</span>
+              <span class="tip-icon" style="background:rgba(255,255,255,0.3);color:rgba(255,255,255,0.8)">?</span>
+            </span>
+          </div>
+          <div class="profit-value pos" id="f-profit">+$2,400</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">
+          <span class="tip-wrap">
+            Break-even projection
+            <span class="tip-box">How many months until your cumulative profit repays your total startup cost (equipment + furniture + $40k base build-out). Each month you're profitable chips away at the startup debt. Month the bar crosses zero = break-even.</span>
+            <span class="tip-icon">?</span>
+          </span>
+        </div>
+        <div id="cashflowViz" style="padding:8px 0"></div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:8px" id="bevenNote">Break-even at month <strong id="bevenMonth">14</strong> based on current inputs</div>
+        <div class="btn-row">
+          <button class="btn btn-sm" onclick="sendPrompt('My specialty cafe has monthly revenue of ' + document.getElementById(\'f-rev\').textContent + ' and monthly profit of ' + document.getElementById(\'f-profit\').textContent + '. What are 3 specific strategies to improve profitability for a single-origin Ethiopian coffee cafe?')">Improve profitability ↗</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SIMULATION ════════════════════════════════════════ -->
+<div id="page-simulation" class="page">
+  <div class="page-header">
+    <div class="page-title">Run simulation</div>
+    <div class="page-sub">Roleplay a day as manager & lead barista. Get real AI customer feedback.</div>
+  </div>
+  <div class="grid-2" style="align-items:start;gap:20px">
+    <div>
+      <div class="card" style="margin-bottom:14px">
+        <div class="section-label">Simulation setup</div>
+        <div class="input-group">
+          <label>Day type</label>
+          <select id="simDayType">
+            <option>Regular weekday morning</option>
+            <option>Busy Saturday rush</option>
+            <option>Slow Sunday afternoon</option>
+            <option>Grand opening day</option>
+            <option>Local event nearby</option>
+            <option>Bad weather day</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Feature today</label>
+          <select id="simFeature">
+            <option>Yirgacheffe Natural pour-over</option>
+            <option>Sidama espresso tasting flight</option>
+            <option>Ethiopian coffee ceremony display</option>
+            <option>New matcha menu launch</option>
+            <option>Happy hour 2–4pm pricing</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Your manager move today</label>
+          <textarea id="simManagerMove" placeholder="What will you do as manager/barista today? e.g. 'I'm going to walk customers through the origin story of our Yirgacheffe beans and offer free tastings to first-timers'">I'll personally introduce each customer to our Yirgacheffe natural pour-over, explain the blueberry and jasmine notes, and offer a tasting comparison with our Sidama espresso to help them find their preferred brew method.</textarea>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:12px" onclick="runFullSim()">
+        Simulate the day ↗
+      </button>
+    </div>
+    <div>
+      <div class="sim-output" id="simOutput">
+        <div class="sim-output-header">
+          <div class="sim-pulse" id="simPulse" style="opacity:0"></div>
+          Simulation output
+        </div>
+        <div class="sim-output-body" id="simBody">
+          Set up your simulation on the left and click "Simulate the day" to see how your cafe performs, what customers say, and what your day looks like as manager and lead barista.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ── Navigation ────────────────────────────────────────────────
+function nav(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  el.classList.add('active');
+}
+
+// ── Branding ──────────────────────────────────────────────────
+let brandColor = '#1C110A', brandTextColor = '#FAF7F2', brandFont = 'Playfair Display';
+
+function updateBrand() {
+  const name    = document.getElementById('cafeName').value;
+  const tagline = document.getElementById('cafeTagline').value;
+  const accent  = document.getElementById('accentColor').value;
+  document.getElementById('previewHeader').textContent  = name;
+  document.getElementById('previewHeader').style.background = brandColor;
+  document.getElementById('previewHeader').style.color      = brandTextColor;
+  document.getElementById('previewHeader').style.fontFamily = `'${brandFont}', serif`;
+  document.getElementById('previewTagline').textContent = tagline;
+  document.getElementById('topbar').querySelector('.logo').innerHTML = name.split(' ')[0] + ' <span>' + (name.split(' ')[1] || '') + '</span>';
+}
+
+function setPrimary(color, textColor) {
+  brandColor = color; brandTextColor = textColor;
+  document.getElementById('accentColor').value = color;
+  updateBrand();
+}
+
+function setFont(font, el) {
+  brandFont = font;
+  document.querySelectorAll('.font-preview').forEach(f => f.classList.remove('selected'));
+  el.classList.add('selected');
+  updateBrand();
+}
+
+// ── Floor layout ──────────────────────────────────────────────
+
+// ══════════════════════════════════════════════
+// FLOOR PLAN — drag, drop, resize, rotate engine
+// ══════════════════════════════════════════════
+const ZONE_TYPES = {
+  bar:     { label:'Bar & espresso',  fill:'#FEF0D8', stroke:'#D4A84B', text:'#7B4A1E' },
+  seating: { label:'Main seating',    fill:'#E8F0E8', stroke:'#7FAA70', text:'#2D5A28' },
+  lounge:  { label:'Lounge',          fill:'#F0EBF8', stroke:'#9B72BB', text:'#4A2570' },
+  prep:    { label:'Prep & storage',  fill:'#E8F0FE', stroke:'#7A9ED0', text:'#1A4070' },
+  retail:  { label:'Retail shelf',    fill:'#FCEEF4', stroke:'#C0607A', text:'#7A2040' },
+  wc:      { label:'Restrooms',       fill:'#F0F0EE', stroke:'#AAAAAA', text:'#555555' },
+  window:  { label:'Window bar',      fill:'#F5EDE0', stroke:'#C4922A', text:'#7B4A1E' },
+};
+
+// Canvas coordinate system — all positions in "canvas units" (560 wide at scale 1)
+const SQFT_PER_PX = 0.22;
+const GRID = 20;
+const MIN_W = 60, MIN_H = 40;
+const HANDLE_R = 7;          // handle radius in canvas units
+const ROT_HANDLE_OFFSET = 28; // how far above zone the rotation handle sits
+
+// Wall boundary in canvas units (the inner edge of the outer wall rect)
+const WALL = { x:12, y:12, x2:548, y2:400 };
+
+let canvas, ctx;
+let zones = [], selected = null, snapOn = true;
+let drag = null, resizeOp = null, rotateOp = null;
+let canvasW = 560, canvasH = 420;
+let nextId = 10;
+
+const LAYOUTS = {
+  cozy: [
+    { id:1, type:'bar',     x:16,  y:16,  w:170, h:100, rot:0 },
+    { id:2, type:'prep',    x:16,  y:124, w:170, h:80,  rot:0 },
+    { id:3, type:'seating', x:200, y:16,  w:240, h:190, rot:0 },
+    { id:4, type:'window',  x:452, y:16,  w:92,  h:190, rot:0 },
+    { id:5, type:'lounge',  x:16,  y:216, w:240, h:100, rot:0 },
+    { id:6, type:'retail',  x:268, y:218, w:172, h:94,  rot:0 },
+    { id:7, type:'wc',      x:452, y:218, w:92,  h:94,  rot:0 },
+  ],
+  medium: [
+    { id:1, type:'bar',     x:16,  y:16,  w:200, h:110, rot:0 },
+    { id:2, type:'prep',    x:16,  y:134, w:200, h:90,  rot:0 },
+    { id:3, type:'seating', x:228, y:16,  w:280, h:200, rot:0 },
+    { id:4, type:'window',  x:480, y:16,  w:80,  h:200, rot:0 },
+    { id:5, type:'lounge',  x:16,  y:234, w:260, h:110, rot:0 },
+    { id:6, type:'retail',  x:288, y:230, w:200, h:110, rot:0 },
+    { id:7, type:'wc',      x:500, y:230, w:60,  h:110, rot:0 },
+  ],
+  open: [
+    { id:1, type:'bar',     x:16,  y:16,  w:220, h:120, rot:0 },
+    { id:2, type:'prep',    x:16,  y:144, w:220, h:100, rot:0 },
+    { id:3, type:'seating', x:248, y:16,  w:290, h:220, rot:0 },
+    { id:4, type:'window',  x:500, y:16,  w:60,  h:220, rot:0 },
+    { id:5, type:'lounge',  x:16,  y:254, w:280, h:120, rot:0 },
+    { id:6, type:'retail',  x:308, y:254, w:220, h:120, rot:0 },
+    { id:7, type:'wc',      x:500, y:254, w:60,  h:120, rot:0 },
+  ],
+};
+
+// ── Throughput & Capacity calculator ─────────────────────────
+function calcOps() {
+  const staff = parseInt(document.getElementById('r-staff')?.value || 3);
+
+  // Drink mix
+  const espPct   = parseInt(document.getElementById('ops-espPct')?.value  || 50) / 100;
+  const pourPct  = parseInt(document.getElementById('ops-pourPct')?.value  || 30) / 100;
+  const batchPct = parseInt(document.getElementById('ops-batchPct')?.value || 20) / 100;
+  document.getElementById('ops-espPct-lbl').textContent   = Math.round(espPct   * 100) + '%';
+  document.getElementById('ops-pourPct-lbl').textContent  = Math.round(pourPct  * 100) + '%';
+  document.getElementById('ops-batchPct-lbl').textContent = Math.round(batchPct * 100) + '%';
+
+  const sel = EQUIPMENT.filter(e => e.selected);
+
+  // ── Espresso throughput ──────────────────────────────────────
+  const espMachines = sel.filter(e => e.shotsPerHour > 0);
+  const totalShotsHr = espMachines.reduce((s, e) => s + e.shotsPerHour, 0);
+  const steamWands   = espMachines.reduce((s, e) => s + e.steamWands, 0);
+  // Each latte needs ~30s steam time on top of shot; with N wands, milk steaming
+  // can be parallelised. Realistic: 1 wand = 30 lattes/hr, 2 wands = 55 lattes/hr
+  const latteCapHr   = steamWands >= 2 ? 55 : steamWands === 1 ? 30 : 0;
+  const espEl = document.getElementById('ops-shotsHr');
+  const espSub = document.getElementById('ops-shotsHrSub');
+  const espDetail = document.getElementById('ops-espDetail');
+  if (totalShotsHr > 0) {
+    espEl.textContent = totalShotsHr;
+    espSub.textContent = 'shots per hour (realistic)';
+    const machineNames = espMachines.map(e => e.name).join(', ');
+    espDetail.innerHTML = `<strong>${machineNames}</strong><br>`
+      + `${steamWands} steam wand${steamWands !== 1 ? 's' : ''} → up to ${latteCapHr} milk drinks/hr<br>`
+      + `Each shot: ~28s pull + purge + dose. Double shot drinks counted as 2.`;
+  } else {
+    espEl.textContent = '0';
+    espSub.textContent = 'no espresso machine selected';
+    espDetail.innerHTML = 'Select an espresso machine in the Equipment tab.';
+  }
+
+  // ── Pour-over throughput ─────────────────────────────────────
+  const pourItems = sel.filter(e => e.pourSlots > 0);
+  const totalPourSlots = pourItems.reduce((s, e) => s + e.pourSlots, 0);
+  // V60: 3.5 min/cup, Chemex: 4 min for 2 cups. One barista can stagger N brewers.
+  // With S baristas: pourBaristas = min(staff, ceil(totalPourSlots/3))
+  const pourBaristas = Math.min(staff, Math.max(1, Math.ceil(totalPourSlots / 3)));
+  // Each position cycles every ~3.5 min = 17 cups/hr/position if barista attended
+  const pourCupsHr = totalPourSlots > 0
+    ? Math.round(Math.min(totalPourSlots, pourBaristas * 3) * (60 / 3.75))
+    : 0;
+
+  const batchItems = sel.filter(e => e.batchLiters > 0);
+  const batchCupsHr = batchItems.reduce((s, e) => s + Math.round(e.batchLiters * 4.2 * (60/6)), 0);
+
+  const pourEl     = document.getElementById('ops-pourHr');
+  const pourSub    = document.getElementById('ops-pourHrSub');
+  const pourDetail = document.getElementById('ops-pourDetail');
+  if (pourCupsHr + batchCupsHr > 0) {
+    pourEl.textContent = pourCupsHr + batchCupsHr;
+    pourSub.textContent = 'filter coffee cups per hour';
+    let detail = '';
+    if (pourCupsHr > 0)  detail += `${totalPourSlots} pour-over slot${totalPourSlots!==1?'s':''} → ~${pourCupsHr} cups/hr (${pourBaristas} barista${pourBaristas!==1?'s':''} staggering brews)<br>`;
+    if (batchCupsHr > 0) detail += `Batch brewer → ~${batchCupsHr} cups/hr (pre-brewed, no per-order wait)`;
+    pourDetail.innerHTML = detail;
+  } else {
+    pourEl.textContent = '0';
+    pourSub.textContent = 'no pour-over or batch equipment';
+    pourDetail.innerHTML = 'Add Chemex, V60, or Fetco batch brewer in Equipment.';
+  }
+
+  // ── Wait time model ───────────────────────────────────────────
+  const custPerHr = Math.round(parseInt(document.getElementById('r-cust')?.value || 80) / 8); // spread over 8 hrs
+  const peakCustHr = Math.round(custPerHr * 2.2); // peak hour = ~2.2× average
+
+  // Weighted service time (seconds)
+  const espTimeSec   = 55;   // shot + steam if needed, avg
+  const pourTimeSec  = 210;  // 3.5 min avg pour-over
+  const batchTimeSec = 15;   // scoop from airpot
+  const weightedSec = espPct * espTimeSec + pourPct * pourTimeSec + batchPct * batchTimeSec;
+
+  // Total service capacity: staff × 3600 / weighted_service_time
+  const serviceCap = staff > 0 ? Math.round(staff * 3600 / weightedSec) : 0;
+
+  // POS bottleneck: each terminal handles ~45 orders/hr
+  const terminals = sel.reduce((s, e) => s + e.posTerminals, 0);
+  const posCap = terminals > 0 ? terminals * 45 : 999;
+
+  // Effective cap is minimum of service and POS
+  const effectiveCap = Math.min(serviceCap, posCap);
+
+  // Simple M/M/1 queue approximation: wait = ρ/(μ-λ) * service_time
+  // λ = arrival rate, μ = service rate, ρ = utilisation
+  const lambda = peakCustHr / 60; // per minute
+  const mu     = effectiveCap > 0 ? effectiveCap / 60 : 0.01;
+  const rho    = lambda / mu;
+  let waitMin;
+  if (rho >= 0.98) {
+    waitMin = 15; // saturated queue
+  } else {
+    waitMin = Math.round((rho / (1 - rho)) * (weightedSec / 60) * 10) / 10;
+    waitMin = Math.max(0.5, Math.min(waitMin, 15));
+  }
+
+  const waitEl     = document.getElementById('ops-waitTime');
+  const waitFill   = document.getElementById('ops-waitFill');
+  const waitDetail = document.getElementById('ops-waitDetail');
+  waitEl.textContent = waitMin.toFixed(1);
+  const waitColor = waitMin <= 2 ? '#4A7050' : waitMin <= 4 ? '#C4922A' : '#C0607A';
+  waitEl.style.color = waitColor;
+  const waitPct = Math.min(100, Math.round(waitMin / 8 * 100));
+  waitFill.style.width   = waitPct + '%';
+  waitFill.style.background = waitColor;
+  const bottleneck = serviceCap < posCap ? `barista capacity (${staff} staff)` : `POS terminals (${terminals})`;
+  waitDetail.innerHTML = `Peak hour: ~${peakCustHr} customers/hr · Effective capacity: ${effectiveCap} orders/hr<br>`
+    + `Bottleneck: ${bottleneck} · Utilisation: ${Math.round(rho * 100)}%<br>`
+    + (rho > 0.8 ? '<strong style="color:#C0607A">Warning: queue will build rapidly above 80% utilisation</strong>' : 'Queue is manageable at current settings');
+
+  // ── Max occupancy ─────────────────────────────────────────────
+  // Seating zones: 20 sqft/person. Standing/bar: 15 sqft/person. WC not counted.
+  const SEAT_SQFT   = 20;  // IBC fire code seated
+  const STAND_SQFT  = 15;  // standing / bar
+
+  let seatedOcc = 0, standingOcc = 0, zoneRows = '';
+  if (typeof zones !== 'undefined' && zones.length > 0) {
+    zones.forEach(z => {
+      const sqft = Math.round(z.w * z.h * SQFT_PER_PX);
+      const t    = (ZONE_TYPES[z.type] || {}).label || z.type;
+      let people = 0, note = '';
+      if (['seating','lounge'].includes(z.type)) {
+        people = Math.floor(sqft / SEAT_SQFT);
+        seatedOcc += people;
+        note = `${sqft} sqft ÷ ${SEAT_SQFT} sqft/person`;
+      } else if (['bar','window'].includes(z.type)) {
+        people = Math.floor(sqft / STAND_SQFT);
+        standingOcc += people;
+        note = `${sqft} sqft ÷ ${STAND_SQFT} sqft/person (bar standing)`;
+      } else if (['retail'].includes(z.type)) {
+        people = Math.floor(sqft / STAND_SQFT * 0.5); // half capacity for retail browsing
+        standingOcc += people;
+        note = `${sqft} sqft · retail browsing (~50% density)`;
+      } else {
+        note = `${sqft} sqft · not counted toward occupancy`;
+      }
+      const statusColor = people > 0 ? 'var(--sage)' : 'var(--text-3)';
+      zoneRows += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border)">
+        <div>
+          <span style="font-weight:500">${t}</span>
+          <span style="font-size:11px;color:var(--text-3);margin-left:8px">${note}</span>
+        </div>
+        <span style="font-weight:500;color:${statusColor}">${people > 0 ? people + ' people' : '—'}</span>
+      </div>`;
+    });
+    const totalOcc = seatedOcc + standingOcc;
+    document.getElementById('ops-maxOcc').textContent = totalOcc;
+    document.getElementById('ops-occDetail').innerHTML =
+      `${seatedOcc} seated (20 sqft/person) + ${standingOcc} at bar / standing (15 sqft/person)<br>`
+      + `<span style="color:var(--text-3);font-size:10px">IBC fire code occupancy load factors</span>`;
+    document.getElementById('ops-zoneBreakdown').innerHTML = zoneRows
+      + `<div style="display:flex;justify-content:space-between;font-weight:500;padding:8px 0 0">
+           <span>Total max occupancy</span><span style="color:var(--roast)">${totalOcc} people</span>
+         </div>`;
+  } else {
+    document.getElementById('ops-maxOcc').textContent = '—';
+    document.getElementById('ops-occDetail').innerHTML = 'Go to Interior Layout and place zones to calculate.';
+    document.getElementById('ops-zoneBreakdown').innerHTML = 'Load the Interior Layout tab and place zones to see occupancy calculations here.';
+  }
+
+  // ── Summary table ─────────────────────────────────────────────
+  const totalCap = espPct > 0 ? (totalShotsHr > 0 ? Math.round(totalShotsHr / (espPct > 0 ? (1.3 * espPct) : 1)) : 0) : 999;
+  const rows = [
+    {
+      type: 'Espresso drinks',
+      timeSec: espTimeSec, maxHr: totalShotsHr > 0 ? Math.round(totalShotsHr / 1.3) : 0,
+      limit: espMachines.length > 0 ? espMachines.map(e=>e.name).join(', ') : 'No machine selected',
+      ok: totalShotsHr > 0
+    },
+    {
+      type: 'Pour-over (V60/Chemex)',
+      timeSec: 210, maxHr: pourCupsHr,
+      limit: pourItems.length > 0 ? `${totalPourSlots} slots` : 'No pour-over equipment',
+      ok: pourCupsHr > 0
+    },
+    {
+      type: 'Batch / drip coffee',
+      timeSec: 15, maxHr: batchCupsHr,
+      limit: batchItems.length > 0 ? batchItems.map(e=>e.name).join(', ') : 'No batch brewer',
+      ok: batchCupsHr > 0
+    },
+    {
+      type: 'POS / checkout',
+      timeSec: 48, maxHr: posCap < 999 ? posCap : 0,
+      limit: terminals > 0 ? `${terminals} terminal${terminals!==1?'s':''}` : 'No POS selected',
+      ok: terminals > 0
+    },
+  ];
+  document.getElementById('ops-tableBody').innerHTML = rows.map(r => `
+    <tr style="border-bottom:0.5px solid var(--border)">
+      <td style="padding:8px 10px">${r.type}</td>
+      <td style="text-align:right;padding:8px 10px;color:var(--text-2)">${r.timeSec < 60 ? r.timeSec + 's' : (r.timeSec/60).toFixed(1) + ' min'}</td>
+      <td style="text-align:right;padding:8px 10px;font-weight:500">${r.maxHr > 0 ? r.maxHr : '—'}</td>
+      <td style="text-align:right;padding:8px 10px;font-size:11px;color:var(--text-3)">${r.limit}</td>
+      <td style="text-align:right;padding:8px 10px">
+        <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${r.ok ? 'var(--sage-lt)' : '#FDE8F0'};color:${r.ok ? 'var(--sage)' : '#C0607A'};font-weight:500">
+          ${r.ok ? 'ready' : 'missing'}
+        </span>
+      </td>
+    </tr>`).join('');
+}
+
+// ── Init ──────────────────────────────────────────────────────
+function initCanvas() {
+  canvas = document.getElementById('floorCanvas');
+  ctx = canvas.getContext('2d');
+  resizeCanvas();
+  loadLayout('cozy');
+  canvas.addEventListener('mousedown',  onDown);
+  canvas.addEventListener('mousemove',  onMove);
+  canvas.addEventListener('mouseup',    onUp);
+  canvas.addEventListener('mouseleave', onUp);
+  canvas.addEventListener('touchstart', onTouchStart, {passive:false});
+  canvas.addEventListener('touchmove',  onTouchMove,  {passive:false});
+  canvas.addEventListener('touchend',   onTouchEnd);
+  document.addEventListener('keydown', e => {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && selected !== null) {
+      e.preventDefault(); deleteSelected();
+    }
+    // R key = rotate 90° clockwise
+    if (e.key === 'r' || e.key === 'R') {
+      if (selected !== null) { rotateZone90(selected); }
+    }
+  });
+}
+
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  canvasW = wrap.clientWidth || 560;
+  canvas.width  = canvasW;
+  canvas.height = canvasH;
+  draw();
+}
+
+function loadLayout(name) {
+  const t = LAYOUTS[name] || LAYOUTS.cozy;
+  zones = t.map(z => ({ ...z, w: z.w || 100, rot: z.rot || 0 }));
+  nextId = 10;
+  selected = null;
+  draw();
+}
+
+function getScale() { return canvasW / 560; }
+function snap(v)    { return snapOn ? Math.round(v / GRID) * GRID : v; }
+
+// ── Zone geometry helpers ─────────────────────────────────────
+// Returns the center point of a zone in canvas units
+function zoneCenter(z) {
+  return { cx: z.x + z.w / 2, cy: z.y + z.h / 2 };
+}
+
+// Transform a point from world-space into the zone's local (unrotated) space
+function worldToLocal(z, wx, wy) {
+  const { cx, cy } = zoneCenter(z);
+  const rad = -z.rot * Math.PI / 180;
+  const dx = wx - cx, dy = wy - cy;
+  return {
+    lx: dx * Math.cos(rad) - dy * Math.sin(rad),
+    ly: dx * Math.sin(rad) + dy * Math.cos(rad),
+  };
+}
+
+// Check if a world-space point hits inside the zone rectangle
+function hitZone(z, wx, wy) {
+  const { lx, ly } = worldToLocal(z, wx, wy);
+  return lx >= -z.w/2 && lx <= z.w/2 && ly >= -z.h/2 && ly <= z.h/2;
+}
+
+// ── Axis-aligned bounding box of a rotated zone (for clamping) ──
+function zoneBBox(z) {
+  const { cx, cy } = zoneCenter(z);
+  const rad = z.rot * Math.PI / 180;
+  const cos = Math.abs(Math.cos(rad)), sin = Math.abs(Math.sin(rad));
+  const hw = (z.w * cos + z.h * sin) / 2;
+  const hh = (z.w * sin + z.h * cos) / 2;
+  return { minX: cx - hw, minY: cy - hh, maxX: cx + hw, maxY: cy + hh };
+}
+
+// Clamp zone position so its AABB stays inside the wall boundary
+function clampZone(z) {
+  const { cx, cy } = zoneCenter(z);
+  const rad = z.rot * Math.PI / 180;
+  const cos = Math.abs(Math.cos(rad)), sin = Math.abs(Math.sin(rad));
+  const hw = (z.w * cos + z.h * sin) / 2;
+  const hh = (z.w * sin + z.h * cos) / 2;
+
+  // Desired center clamped so AABB fits inside walls
+  const newCx = Math.max(WALL.x + hw, Math.min(WALL.x2 - hw, cx));
+  const newCy = Math.max(WALL.y + hh, Math.min(WALL.y2 - hh - 20, cy));
+
+  z.x = snap(newCx - z.w / 2);
+  z.y = snap(newCy - z.h / 2);
+}
+
+// ── Hit-test handles in world space ─────────────────────────
+// Returns handle name or null. Handles are in local zone space.
+function getHandle(z, wpx, wpy) {
+  const { lx, ly } = worldToLocal(z, wpx, wpy);
+  const hw = z.w / 2, hh = z.h / 2;
+  const ht = HANDLE_R * 1.6; // hit tolerance
+
+  // Corner handles
+  const corners = [
+    { name:'nw', lx:-hw, ly:-hh },
+    { name:'ne', lx: hw, ly:-hh },
+    { name:'se', lx: hw, ly: hh },
+    { name:'sw', lx:-hw, ly: hh },
+  ];
+  for (const c of corners) {
+    if (Math.hypot(lx - c.lx, ly - c.ly) < ht) return c.name;
+  }
+  // Edge mid handles
+  const edges = [
+    { name:'n',  lx:0,   ly:-hh },
+    { name:'e',  lx: hw, ly:0   },
+    { name:'s',  lx:0,   ly: hh },
+    { name:'w',  lx:-hw, ly:0   },
+  ];
+  for (const e of edges) {
+    if (Math.hypot(lx - e.lx, ly - e.ly) < ht) return e.name;
+  }
+  return null;
+}
+
+// Rotation handle is a circle above the zone top-centre, in world space
+function getRotHandle(z, wpx, wpy) {
+  const { cx, cy } = zoneCenter(z);
+  const rad = z.rot * Math.PI / 180;
+  // The handle is offset upward in the zone's local space
+  const rhx = cx + Math.sin(-rad) * (-z.h/2 - ROT_HANDLE_OFFSET);
+  const rhy = cy - Math.cos(-rad) * (z.h/2 + ROT_HANDLE_OFFSET);
+  // Actually: top-centre in local then rotate
+  const localTopCy = -z.h/2 - ROT_HANDLE_OFFSET;
+  const rwx = cx + 0 * Math.cos(z.rot*Math.PI/180) - localTopCy * Math.sin(z.rot*Math.PI/180);
+  const rwy = cy + 0 * Math.sin(z.rot*Math.PI/180) + localTopCy * Math.cos(z.rot*Math.PI/180);
+  return Math.hypot(wpx - rwx, wpy - rwy) < HANDLE_R * 2 ? {rwx, rwy} : null;
+}
+
+// ── Drawing ───────────────────────────────────────────────────
+function draw() {
+  const sc = getScale();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Grid
+  if (snapOn) {
+    ctx.strokeStyle = 'rgba(196,168,130,0.12)';
+    ctx.lineWidth = 0.5;
+    const gs = GRID * sc;
+    for (let x = 0; x < canvasW; x += gs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvasH); ctx.stroke(); }
+    for (let y = 0; y < canvasH; y += gs) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvasW,y); ctx.stroke(); }
+  }
+
+  // Outer wall
+  ctx.strokeStyle = 'rgba(196,168,130,0.55)';
+  ctx.lineWidth = 2 * sc;
+  ctx.setLineDash([]);
+  rrPath(8*sc, 8*sc, (WALL.x2 - 8)*sc, (WALL.y2 - 8)*sc, 8*sc);
+  ctx.stroke();
+
+  // Entrance
+  ctx.strokeStyle = '#C4A882';
+  ctx.lineWidth = 2.5 * sc;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(canvasW * 0.35, canvasH - 12*sc);
+  ctx.lineTo(canvasW * 0.55, canvasH - 12*sc);
+  ctx.stroke();
+  ctx.fillStyle = '#8C7060';
+  ctx.font = `${9*sc}px DM Sans,sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('entrance', canvasW * 0.45, canvasH - 4*sc);
+
+  // Draw zones back-to-front
+  zones.forEach(z => drawZone(z, sc));
+}
+
+function drawZone(z, sc) {
+  const isSel = selected === z.id;
+  const t  = ZONE_TYPES[z.type] || ZONE_TYPES.seating;
+  const { cx, cy } = zoneCenter(z);
+  const rad = z.rot * Math.PI / 180;
+
+  ctx.save();
+  ctx.translate(cx * sc, cy * sc);
+  ctx.rotate(rad);
+
+  const hw = z.w * sc / 2, hh = z.h * sc / 2;
+
+  // Fill
+  ctx.fillStyle = t.fill;
+  rrPath(-hw, -hh, z.w*sc, z.h*sc, 4*sc);
+  ctx.fill();
+
+  // Border
+  ctx.strokeStyle = isSel ? '#C4922A' : t.stroke;
+  ctx.lineWidth   = isSel ? 2*sc : 1*sc;
+  ctx.setLineDash(isSel ? [4*sc, 3*sc] : []);
+  rrPath(-hw, -hh, z.w*sc, z.h*sc, 4*sc);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Labels
+  const fz = Math.max(9, Math.min(13, z.w / 10)) * sc;
+  ctx.fillStyle = t.text;
+  ctx.font = `500 ${fz}px DM Sans,sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const label = z.label || t.label;
+  ctx.fillText(label, 0, -fz * 0.55);
+
+  const sqft = Math.round(z.w * z.h * SQFT_PER_PX);
+  ctx.font = `${Math.max(8, fz*0.8)}px DM Sans,sans-serif`;
+  ctx.globalAlpha = 0.6;
+  ctx.fillText(`~${sqft} sqft`, 0, fz * 0.65);
+  ctx.globalAlpha = 1;
+
+  // Rotation badge (small "↻ N°" in corner)
+  if (z.rot !== 0) {
+    ctx.fillStyle = t.stroke;
+    ctx.font = `${Math.max(8, fz*0.72)}px DM Sans,sans-serif`;
+    ctx.globalAlpha = 0.75;
+    ctx.fillText(`${z.rot}°`, hw - 6*sc, -hh + 9*sc);
+    ctx.globalAlpha = 1;
+  }
+
+  ctx.restore();
+
+  // Draw handles in world space (no rotation transform) when selected
+  if (isSel) {
+    drawHandles(z, sc);
+    drawRotHandle(z, sc);
+  }
+}
+
+function drawHandles(z, sc) {
+  const { cx, cy } = zoneCenter(z);
+  const rad = z.rot * Math.PI / 180;
+  const cos = Math.cos(rad), sin = Math.sin(rad);
+  const hw = z.w/2, hh = z.h/2;
+
+  // Corner + edge handle positions in local space
+  const localPts = [
+    { name:'nw', lx:-hw, ly:-hh }, { name:'ne', lx: hw, ly:-hh },
+    { name:'se', lx: hw, ly: hh }, { name:'sw', lx:-hw, ly: hh },
+    { name:'n',  lx:0,   ly:-hh }, { name:'e',  lx: hw, ly:0   },
+    { name:'s',  lx:0,   ly: hh }, { name:'w',  lx:-hw, ly:0   },
+  ];
+
+  localPts.forEach(({name, lx, ly}) => {
+    const wx = (cx + lx*cos - ly*sin) * sc;
+    const wy = (cy + lx*sin + ly*cos) * sc;
+    const isCorner = name.length === 2;
+    ctx.beginPath();
+    ctx.arc(wx, wy, HANDLE_R * sc * (isCorner ? 1 : 0.75), 0, Math.PI*2);
+    ctx.fillStyle   = isCorner ? '#C4922A' : '#FFF';
+    ctx.strokeStyle = '#C4922A';
+    ctx.lineWidth   = 1.5 * sc;
+    ctx.fill();
+    ctx.stroke();
+  });
+}
+
+function drawRotHandle(z, sc) {
+  const { cx, cy } = zoneCenter(z);
+  const rad = z.rot * Math.PI / 180;
+  // Place the handle above the top-centre of the zone in local space
+  const localX = 0, localY = -(z.h/2 + ROT_HANDLE_OFFSET);
+  const wx = (cx + localX*Math.cos(rad) - localY*Math.sin(rad)) * sc;
+  const wy = (cy + localX*Math.sin(rad) + localY*Math.cos(rad)) * sc;
+
+  // Connector line
+  const topCx = (cx - (z.h/2)*Math.sin(rad)) * sc;
+  const topCy = (cy + (z.h/2)*Math.cos(rad) - (z.h)*Math.cos(rad)) * sc;
+  // line from zone top-centre to handle
+  const ztx = (cx + 0*Math.cos(rad) - (-z.h/2)*Math.sin(rad)) * sc;
+  const zty = (cy + 0*Math.sin(rad) + (-z.h/2)*Math.cos(rad)) * sc;
+  ctx.strokeStyle = '#C4922A';
+  ctx.lineWidth   = 1 * sc;
+  ctx.setLineDash([3*sc, 3*sc]);
+  ctx.beginPath();
+  ctx.moveTo(ztx, zty);
+  ctx.lineTo(wx, wy);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Handle circle
+  ctx.beginPath();
+  ctx.arc(wx, wy, HANDLE_R * sc * 1.1, 0, Math.PI*2);
+  ctx.fillStyle   = '#C4922A';
+  ctx.fill();
+  ctx.strokeStyle = '#FFF';
+  ctx.lineWidth   = 1.5 * sc;
+  ctx.stroke();
+
+  // Rotation arrow icon inside circle
+  ctx.strokeStyle = '#FFF';
+  ctx.lineWidth   = 1.2 * sc;
+  ctx.lineCap     = 'round';
+  const r = HANDLE_R * sc * 0.6;
+  ctx.beginPath();
+  ctx.arc(wx, wy, r, -2.5, 0.8);
+  ctx.stroke();
+  // Arrowhead
+  const ax = wx + r * Math.cos(0.8), ay = wy + r * Math.sin(0.8);
+  ctx.beginPath();
+  ctx.moveTo(ax - 2*sc, ay - 3*sc);
+  ctx.lineTo(ax + 2*sc, ay);
+  ctx.lineTo(ax - 2*sc, ay + 3*sc);
+  ctx.stroke();
+}
+
+// Shared rounded-rect path (no separate beginPath — caller decides fill/stroke)
+function rrPath(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+  ctx.lineTo(x+r, y+h);
+  ctx.arcTo(x, y+h, x, y+h-r, r);
+  ctx.lineTo(x, y+r);
+  ctx.arcTo(x, y, x+r, y, r);
+  ctx.closePath();
+}
+
+// ── Input handling ────────────────────────────────────────────
+function getPos(e) {
+  const r = canvas.getBoundingClientRect();
+  const sc = getScale();
+  if (e.touches) return {
+    x: (e.touches[0].clientX - r.left) / sc,
+    y: (e.touches[0].clientY - r.top)  / sc,
+  };
+  return {
+    x: (e.clientX - r.left) / sc,
+    y: (e.clientY - r.top)  / sc,
+  };
+}
+
+function onDown(e) { handleDown(getPos(e)); }
+function onTouchStart(e) { e.preventDefault(); handleDown(getPos(e)); }
+
+function handleDown({x, y}) {
+  // Priority: if something selected, check its handles first
+  if (selected !== null) {
+    const z = zones.find(z => z.id === selected);
+    if (z) {
+      // Rotation handle
+      const rh = getRotHandle(z, x, y);
+      if (rh) {
+        const { cx, cy } = zoneCenter(z);
+        rotateOp = { id:z.id, startAngle: Math.atan2(y - cy, x - cx), startRot: z.rot };
+        canvas.style.cursor = 'grabbing';
+        return;
+      }
+      // Resize handle
+      const h = getHandle(z, x, y);
+      if (h) {
+        resizeOp = { id:z.id, handle:h, ox:x, oy:y, ox_z:z.x, oy_z:z.y, ow:z.w, oh:z.h };
+        canvas.style.cursor = getCursor(h, z.rot);
+        return;
+      }
+    }
+  }
+
+  // Hit-test zones back-to-front
+  let hit = null;
+  for (let i = zones.length-1; i >= 0; i--) {
+    if (hitZone(zones[i], x, y)) { hit = zones[i]; break; }
+  }
+
+  if (hit) {
+    selected = hit.id;
+    const { cx, cy } = zoneCenter(hit);
+    drag = { id:hit.id, ox:x, oy:y, ocx:cx, ocy:cy };
+    canvas.style.cursor = 'grabbing';
+    updateInfoBar(hit);
+  } else {
+    selected = null;
+    hideInfoBar();
+  }
+  draw();
+}
+
+function onMove(e) { handleMove(getPos(e)); }
+function onTouchMove(e) { e.preventDefault(); handleMove(getPos(e)); }
+
+function handleMove({x, y}) {
+  // Rotation
+  if (rotateOp) {
+    const z = zones.find(z => z.id === rotateOp.id);
+    if (!z) return;
+    const { cx, cy } = zoneCenter(z);
+    const angle = Math.atan2(y - cy, x - cx);
+    let newRot = rotateOp.startRot + (angle - rotateOp.startAngle) * 180 / Math.PI;
+    // Snap to 15° increments when snapOn
+    if (snapOn) newRot = Math.round(newRot / 15) * 15;
+    z.rot = ((newRot % 360) + 360) % 360;
+    clampZone(z);
+    updateInfoBar(z);
+    draw();
+    return;
+  }
+
+  // Resize — works in the zone's local (unrotated) coordinate frame
+  if (resizeOp) {
+    const z = zones.find(z => z.id === resizeOp.id);
+    if (!z) return;
+    const rad = z.rot * Math.PI / 180;
+    const cos = Math.cos(rad), sin = Math.sin(rad);
+
+    // Project the mouse delta onto the zone's local axes
+    const gdx = x - resizeOp.ox, gdy = y - resizeOp.oy;
+    const ldx =  gdx*cos + gdy*sin;   // local x delta
+    const ldy = -gdx*sin + gdy*cos;   // local y delta
+    const h = resizeOp.handle;
+
+    let nw = resizeOp.ow, nh = resizeOp.oh;
+    let shiftX = 0, shiftY = 0;  // center shift needed when resizing from near edge
+
+    if (h.includes('e'))  nw = Math.max(MIN_W, snap(resizeOp.ow + ldx));
+    if (h.includes('s'))  nh = Math.max(MIN_H, snap(resizeOp.oh + ldy));
+    if (h.includes('w')) {
+      const newW = Math.max(MIN_W, snap(resizeOp.ow - ldx));
+      shiftX = (newW - resizeOp.ow) / 2 * (-1);  // shrink moves centre
+      nw = newW;
+    }
+    if (h.includes('n')) {
+      const newH = Math.max(MIN_H, snap(resizeOp.oh - ldy));
+      shiftY = (newH - resizeOp.oh) / 2 * (-1);
+      nh = newH;
+    }
+
+    // Recompute w-side shift properly
+    if (h.includes('w')) shiftX = -(nw - resizeOp.ow) / 2;
+    if (h.includes('n')) shiftY = -(nh - resizeOp.oh) / 2;
+
+    // Update width/height
+    z.w = nw; z.h = nh;
+
+    // Shift centre in local space, then convert back to world and update x/y
+    const { cx:ocx, cy:ocy } = { cx: resizeOp.ox_z + resizeOp.ow/2, cy: resizeOp.oy_z + resizeOp.oh/2 };
+    const newCx = ocx + shiftX * cos - shiftY * sin;
+    const newCy = ocy + shiftX * sin + shiftY * cos;
+    z.x = snap(newCx - nw/2);
+    z.y = snap(newCy - nh/2);
+
+    clampZone(z);
+    updateInfoBar(z);
+    draw();
+    return;
+  }
+
+  // Drag — move centre, keep zone inside walls
+  if (drag) {
+    const z = zones.find(z => z.id === drag.id);
+    if (!z) return;
+    const dx = x - drag.ox, dy = y - drag.oy;
+    const newCx = drag.ocx + dx;
+    const newCy = drag.ocy + dy;
+    z.x = newCx - z.w/2;
+    z.y = newCy - z.h/2;
+    clampZone(z);
+    updateInfoBar(z);
+    draw();
+    return;
+  }
+
+  // Hover cursor
+  if (selected !== null) {
+    const z = zones.find(z => z.id === selected);
+    if (z) {
+      if (getRotHandle(z, x, y)) { canvas.style.cursor = 'grab'; return; }
+      const h = getHandle(z, x, y);
+      if (h) { canvas.style.cursor = getCursor(h, z.rot); return; }
+    }
+  }
+  let hovering = false;
+  for (let i = zones.length-1; i >= 0; i--) {
+    if (hitZone(zones[i], x, y)) { hovering = true; break; }
+  }
+  canvas.style.cursor = hovering ? 'grab' : 'default';
+}
+
+function onUp()       { drag = null; resizeOp = null; rotateOp = null; canvas.style.cursor = 'default'; }
+function onTouchEnd() { onUp(); }
+
+// Cursor depends on handle direction AND zone rotation
+function getCursor(h, rot) {
+  const angles = { nw:135, n:90, ne:45, e:0, se:135, s:90, sw:45, w:0 };
+  const base = (angles[h] || 0) + rot;
+  const norm = ((base % 180) + 180) % 180;
+  if (norm < 22.5 || norm >= 157.5) return 'ew-resize';
+  if (norm < 67.5)  return 'nwse-resize';
+  if (norm < 112.5) return 'ns-resize';
+  return 'nesw-resize';
+}
+
+// ── Rotate button ─────────────────────────────────────────────
+function rotateZone90(id) {
+  const z = zones.find(z => z.id === id);
+  if (!z) return;
+  z.rot = (z.rot + 90) % 360;
+  clampZone(z);
+  updateInfoBar(z);
+  draw();
+}
+
+function rotateSelectedCW()  { if (selected !== null) rotateZone90(selected); }
+function rotateSelectedCCW() {
+  const z = zones.find(z => z.id === selected);
+  if (!z) return;
+  z.rot = (z.rot + 270) % 360;
+  clampZone(z);
+  updateInfoBar(z);
+  draw();
+}
+
+// ── Zone management ───────────────────────────────────────────
+function addZone(type) {
+  zones.push({ id:nextId++, type, x:snap(40), y:snap(40), w:snap(160), h:snap(100), rot:0 });
+  selected = zones[zones.length-1].id;
+  draw();
+}
+
+function deleteSelected() {
+  if (selected === null) return;
+  zones = zones.filter(z => z.id !== selected);
+  selected = null;
+  hideInfoBar();
+  draw();
+}
+
+function resetLayout() {
+  const active = document.querySelector('.floor-toolbar .zone-chip.active');
+  const name = active
+    ? (active.textContent.includes('800') ? 'cozy'
+     : active.textContent.includes('1,200') ? 'medium' : 'open')
+    : 'cozy';
+  loadLayout(name);
+  hideInfoBar();
+}
+
+function toggleSnap(el) { snapOn = el.checked; draw(); }
+
+function setLayout(size, el) {
+  document.querySelectorAll('.floor-toolbar .zone-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  loadLayout(size);
+  hideInfoBar();
+}
+
+// ── Info bar ──────────────────────────────────────────────────
+function updateInfoBar(z) {
+  const t = ZONE_TYPES[z.type] || ZONE_TYPES.seating;
+  const sqft = Math.round(z.w * z.h * SQFT_PER_PX);
+  const bar = document.getElementById('zoneInfoBar');
+  bar.style.display = 'block';
+  bar.innerHTML = `<strong>${z.label || t.label}</strong> &nbsp;·&nbsp; `
+    + `${Math.round(z.w)} × ${Math.round(z.h)} &nbsp;·&nbsp; ~${sqft} sqft &nbsp;·&nbsp; `
+    + `rotation: ${Math.round(z.rot)}° &nbsp;·&nbsp; `
+    + `<button onclick="rotateSelectedCCW()" style="background:none;border:none;cursor:pointer;color:#7B4A1E;font-size:13px;padding:0 4px" title="Rotate 90° CCW">↺</button>`
+    + `<button onclick="rotateSelectedCW()"  style="background:none;border:none;cursor:pointer;color:#7B4A1E;font-size:13px;padding:0 4px" title="Rotate 90° CW">↻</button>`;
+  updateLayoutSqft();
+}
+
+function hideInfoBar() { document.getElementById('zoneInfoBar').style.display = 'none'; }
+
+function updateLayoutSqft() {
+  zones.reduce((s, z) => s + Math.round(z.w * z.h * SQFT_PER_PX), 0);
+}
+
+function getLayoutDescription() {
+  return zones.map(z => {
+    const t = ZONE_TYPES[z.type] || ZONE_TYPES.seating;
+    const sqft = Math.round(z.w * z.h * SQFT_PER_PX);
+    return `${z.label || t.label} (~${sqft} sqft, ${z.rot}° rotation)`;
+  }).join(', ');
+}
+
+
+async function runLayoutSim() {
+  const style  = document.getElementById('seatStyle').value;
+  const atmos  = document.getElementById('atmosPriority').value;
+  const notes  = document.getElementById('layoutNotes').value;
+  const cafeName = document.getElementById('cafeName').value;
+
+  document.getElementById('layoutSimOutput').style.display = 'block';
+  document.getElementById('layoutSimBody').innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:var(--text-3)"><div class="spinner"></div> Simulating customer experience...</div>';
+
+  const layoutDesc = typeof getLayoutDescription === 'function' ? getLayoutDescription() : '';
+  const prompt = `You are simulating 4 different customers visiting ${cafeName}, a specialty Ethiopian coffee cafe. 
+
+Layout: ${style}. Atmosphere: ${atmos}. Floor zones: ${layoutDesc}. Special notes: ${notes}
+
+For each customer, give a name, a one-line profile (e.g. "remote worker, first visit"), a star rating out of 5, and a 1-2 sentence review from their perspective. Be realistic — not everyone loves everything. Include one constructive criticism.
+
+Format each review exactly like:
+**[Name]** · [profile] · [★★★★☆]
+"[Their review]"
+
+After the 4 reviews, add a brief "Manager takeaway" paragraph with 2-3 actionable insights.`;
+
+  try {
+    const res = await fetch('/api/simulate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const errMsg = data?.error?.message || `API error ${res.status}`;
+      document.getElementById('layoutSimBody').innerHTML = `<span style="color:#C0607A">API error: ${errMsg}</span>`;
+      return;
+    }
+    const text = data.content?.[0]?.text || 'No response received.';
+    document.getElementById('layoutSimBody').innerHTML = formatSimOutput(text);
+  } catch (e) {
+    document.getElementById('layoutSimBody').innerHTML = `<span style="color:#C0607A">Simulation error: ${e.message}</span>`;
+  }
+}
+
+// ── Beans ─────────────────────────────────────────────────────
+// price100g: realistic 2024–25 retail price per 100g roasted (USD)
+// Sources: Specialty Coffee Retail Price Index 2024 ($30.24/lb avg),
+// coffeereview.com dataset, and origin-specific market data.
+// Gesha: Hacienda La Esmeralda retail ~$25–40/100g consumer tier
+// Ethiopia naturals: $7–10/100g wholesale → $16–22/100g retail
+// Kenya Nyeri AB: $18–24/100g retail
+// Colombia Huila: $14–18/100g retail
+const BEANS = [
+  { id:'yirg', name:'Yirgacheffe Natural', origin:'Ethiopia', roast:'Medium',     score:91.4, acidity:9.1, flavor:9.2, process:'Natural / Dry', notes:'Blueberry · Jasmine · Bright finish',       selected:true,  price100g:19.50 },
+  { id:'sid',  name:'Sidama Heirloom',     origin:'Ethiopia', roast:'Medium',     score:90.8, acidity:8.8, flavor:9.0, process:'Washed / Wet',  notes:'Stone fruit · Caramel · Smooth',            selected:true,  price100g:17.00 },
+  { id:'guji', name:'Guji Washed',         origin:'Ethiopia', roast:'Med-Light',  score:89.5, acidity:8.9, flavor:8.8, process:'Washed / Wet',  notes:'Citrus · Floral · Clean finish',            selected:false, price100g:16.50 },
+  { id:'ken',  name:'Nyeri AB',            origin:'Kenya',    roast:'Light',      score:90.1, acidity:9.2, flavor:8.9, process:'Washed / Wet',  notes:'Blackcurrant · Grapefruit · Complex',      selected:false, price100g:22.00 },
+  { id:'col',  name:'Huila Supremo',       origin:'Colombia', roast:'Medium',     score:88.2, acidity:8.3, flavor:8.7, process:'Washed / Wet',  notes:'Caramel · Hazelnut · Balanced',             selected:false, price100g:15.50 },
+  { id:'pan',  name:'Gesha Natural',       origin:'Panama',   roast:'Light',      score:94.8, acidity:9.3, flavor:9.5, process:'Natural / Dry',  notes:'Peach · Jasmine · Silky',                  selected:false, price100g:38.00 },
+];
+
+function renderBeans() {
+  document.getElementById('beanGrid').innerHTML = BEANS.map(b => `
+    <div class="bean-card ${b.selected ? 'selected' : ''}" id="bc-${b.id}" onclick="toggleBean('${b.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div class="bean-origin">${b.origin} · ${b.roast}</div>
+        <div style="font-size:13px;font-weight:500;color:var(--roast);white-space:nowrap;margin-left:8px">$${b.price100g.toFixed(2)}<span style="font-size:10px;font-weight:400;color:var(--text-3)">/100g</span></div>
+      </div>
+      <div class="bean-name">${b.name}</div>
+      <div class="bean-stats">
+        <span class="bean-stat">CQI ${b.score}</span>
+        <span class="bean-stat">Acidity ${b.acidity}</span>
+        <span class="bean-stat">Flavor ${b.flavor}</span>
+      </div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:6px">${b.notes}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:5px">
+        <div style="font-size:10px;color:var(--text-3)">${b.process}</div>
+        <div style="font-size:10px;color:var(--text-3)">~$${(b.price100g / 4.54).toFixed(2)}/oz wholesale est.</div>
+      </div>
+    </div>
+  `).join('');
+  const anySelected = BEANS.some(b => b.selected);
+  document.getElementById('beanSimCard').style.display = anySelected ? 'block' : 'none';
+}
+
+function toggleBean(id) {
+  const b = BEANS.find(b => b.id === id);
+  b.selected = !b.selected;
+  renderBeans();
+  // Recalc pricing stats with updated bean selection
+  const p = parseFloat(document.getElementById('pourPrice').textContent.replace('$',''));
+  updateBeanPrices({ value: p }, 'pourPrice', '$');
+}
+
+function updateBeanPrices(el, outId, prefix) {
+  document.getElementById(outId).textContent = prefix + parseFloat(el.value).toFixed(2);
+  const p = parseFloat(document.getElementById('pourPrice').textContent.replace('$',''));
+  const e = parseFloat(document.getElementById('espPrice').textContent.replace('$',''));
+  const l = parseFloat(document.getElementById('lattePrice').textContent.replace('$',''));
+  const avg = (p + e + l) / 3;
+
+  // Bean cost contribution: selected beans' avg price/100g → cost per drink
+  // Pour-over uses ~18g, espresso uses ~20g, latte ~20g
+  const selectedBeans = BEANS.filter(b => b.selected);
+  const avgBeanPrice100g = selectedBeans.length > 0
+    ? selectedBeans.reduce((s, b) => s + b.price100g, 0) / selectedBeans.length
+    : 15;
+  // Cost per drink in beans alone (grams × price/g)
+  const avgGramsPerDrink = 19; // blended avg of pour-over (18g) and espresso (20g)
+  const beanCostPerDrink = (avgBeanPrice100g / 100) * avgGramsPerDrink;
+  // Total COGS includes bean cost + milk (~$0.40) + cup/lid (~$0.25)
+  const totalCogsPerDrink = beanCostPerDrink + 0.40 + 0.25;
+  const cogsPct = Math.round((totalCogsPerDrink / avg) * 100);
+
+  document.getElementById('avgTicket').textContent = '$' + avg.toFixed(2);
+  document.getElementById('foodCostPct').textContent = Math.max(18, Math.min(65, cogsPct)) + '%';
+  document.getElementById('marginPerCup').textContent = '$' + Math.max(0, avg - totalCogsPerDrink).toFixed(2);
+}
+
+// ── Equipment ─────────────────────────────────────────────────
+// ── Equipment throughput model ─────────────────────────────────
+// groups:       espresso group heads (each pulls ~1 shot/28s)
+// shotsPerHour: realistic shots/hr incl. purging, dosing, steaming
+// steamWands:   how many milks can steam simultaneously
+// pourSlots:    concurrent pour-over positions
+// batchLiters:  batch brew volume (L) — 0 if none
+// grindRPM:     grind speed modifier (1 = baseline EK43)
+// posTerminals: # POS terminals (affects checkout queue speed)
+const EQUIPMENT = [
+  { id:'eq1',  name:'La Marzocco Linea Mini', cat:'espresso',      icon:'☕', sub:'2-group commercial',    price:9500,  range:'$8k–$12k',    selected:false,
+    groups:2, shotsPerHour:110, steamWands:2, pourSlots:0, batchLiters:0, grindRPM:1,   posTerminals:0,
+    role:'Pulls up to 110 espresso shots/hr across 2 group heads. Dual steam wands let you steam 2 milks simultaneously — critical during rush.' },
+  { id:'eq2',  name:'Slayer Single Group',    cat:'espresso',      icon:'☕', sub:'Pressure profiling',   price:8200,  range:'$7.5k–$9k',   selected:false,
+    groups:1, shotsPerHour:55,  steamWands:1, pourSlots:0, batchLiters:0, grindRPM:1,   posTerminals:0,
+    role:'Single group with pressure profiling — ideal for showcasing Ethiopian bean nuance. ~55 shots/hr; slower but each shot is more expressive.' },
+  { id:'eq3',  name:'Mahlkönig EK43 Grinder', cat:'espresso',     icon:'⚙', sub:'Filter & espresso',    price:2800,  range:'$2.5k–$3.2k', selected:false,
+    groups:0, shotsPerHour:0,   steamWands:0, pourSlots:0, batchLiters:0, grindRPM:1.0, posTerminals:0,
+    role:'The industry benchmark for grind consistency. Handles both espresso and filter. Grind speed ~5g/s — essential for high-volume pour-over service.' },
+  { id:'eq4',  name:'Fellow Ode Gen 2',        cat:'espresso',     icon:'⚙', sub:'Filter only',           price:345,   range:'$300–$400',    selected:false,
+    groups:0, shotsPerHour:0,   steamWands:0, pourSlots:0, batchLiters:0, grindRPM:0.6, posTerminals:0,
+    role:'Excellent for filter/pour-over, not suited for espresso. Grind speed ~2.5g/s. Good as a dedicated filter grinder alongside an espresso grinder.' },
+  { id:'eq5',  name:'Chemex × 6 (set of 4)',  cat:'brewing',      icon:'△', sub:'Pour-over, 4 positions', price:280,   range:'$60–$100ea',   selected:true,
+    groups:0, shotsPerHour:0,   steamWands:0, pourSlots:4, batchLiters:0, grindRPM:0,   posTerminals:0,
+    role:'4 concurrent pour-over positions. Each Chemex brew takes ~4 min for 600ml (2 cups). One barista can manage 4 Chemex at once = 8 cups/16 min.' },
+  { id:'eq6',  name:'Hario V60 Station',       cat:'brewing',      icon:'△', sub:'Pour-over bar ×6',      price:420,   range:'$380–$500',    selected:true,
+    groups:0, shotsPerHour:0,   steamWands:0, pourSlots:6, batchLiters:0, grindRPM:0,   posTerminals:0,
+    role:'6 V60 positions for single-serve brews. Each takes ~3.5 min. One skilled barista can stagger 6 brews = ~10 cups/15 min at full pace.' },
+  { id:'eq7',  name:'Fetco CBS-2131XTS',       cat:'brewing',      icon:'△', sub:'Batch brewer 1 gal',    price:1850,  range:'$1.5k–$2.2k',  selected:false,
+    groups:0, shotsPerHour:0,   steamWands:0, pourSlots:0, batchLiters:3.8, grindRPM:0, posTerminals:0,
+    role:'Brews 1 gallon (~3.8L, ~16 cups) in 6 min. Dramatically boosts drip coffee throughput — no per-cup wait. Frees baristas for espresso and specialty drinks.' },
+  { id:'eq8',  name:'True Commercial Fridge',  cat:'refrigeration', icon:'▭', sub:'48" reach-in',         price:3200,  range:'$2.8k–$4k',    selected:false,
+    groups:0, shotsPerHour:0,   steamWands:0, pourSlots:0, batchLiters:0, grindRPM:0,   posTerminals:0,
+    role:'Stores milk, cold brew, and perishables. Capacity for ~15 gallons of milk — enough for ~300 milk-based drinks. Larger unit reduces restocking trips during rush.' },
+  { id:'eq9',  name:'Perlick Undercounter',    cat:'refrigeration', icon:'▭', sub:'24" undercounter',     price:1600,  range:'$1.4k–$1.8k',  selected:false,
+    groups:0, shotsPerHour:0,   steamWands:0, pourSlots:0, batchLiters:0, grindRPM:0,   posTerminals:0,
+    role:'Under-bar fridge keeps milk at barista reach — eliminates the walk to the main fridge during rush. Stores ~6 gallons. Reduces per-drink time by ~8 seconds.' },
+  { id:'eq10', name:'Toast POS (starter)',     cat:'pos',           icon:'⊞', sub:'2 terminals + KDS',   price:1200,  range:'$800–$1.5k',   selected:true,
+    groups:0, shotsPerHour:0,   steamWands:0, pourSlots:0, batchLiters:0, grindRPM:0,   posTerminals:2,
+    role:'2 order terminals cuts checkout queue roughly in half during rush. KDS (kitchen display screen) reduces ticket errors. Each terminal handles ~45 orders/hr.' },
+  { id:'eq11', name:'Square for Restaurants', cat:'pos',           icon:'⊞', sub:'1 terminal bundle',   price:800,   range:'$600–$900',    selected:false,
+    groups:0, shotsPerHour:0,   steamWands:0, pourSlots:0, batchLiters:0, grindRPM:0,   posTerminals:1,
+    role:'Single terminal — sufficient for <60 customers/day. Above that, a single terminal becomes the bottleneck. ~45 orders/hr max before queues build.' },
+  { id:'eq12', name:'Vitamix Blender',         cat:'misc',          icon:'◎', sub:'Commercial 48oz',     price:650,   range:'$580–$750',    selected:false,
+    groups:0, shotsPerHour:0,   steamWands:0, pourSlots:0, batchLiters:0, grindRPM:0,   posTerminals:0,
+    role:'Enables blended drinks and matcha lattes. Each blend ~45 seconds. Adds ~$8–12 avg ticket on blended orders. Not needed for pure espresso/filter menu.' },
+  { id:'eq13', name:'Water Filtration System', cat:'misc',          icon:'◈', sub:'3-stage RO system',   price:950,   range:'$700–$1.2k',   selected:true,
+    groups:0, shotsPerHour:0,   steamWands:0, pourSlots:0, batchLiters:0, grindRPM:0,   posTerminals:0,
+    role:'Removes chlorine and controls mineral content. Directly affects espresso extraction and pour-over clarity. Without filtration, Ethiopian beans lose 15–20% of flavor complexity.' },
+  { id:'eq14', name:'Dishwasher (undercntr)',   cat:'misc',         icon:'▣', sub:'Undercounter commercial', price:2400, range:'$2k–$3k',   selected:false,
+    groups:0, shotsPerHour:0,   steamWands:0, pourSlots:0, batchLiters:0, grindRPM:0,   posTerminals:0,
+    role:'Cycles glassware every 2 min. Eliminates the hand-wash bottleneck — critical if you serve 150+ customers/day or run a full-service bar with multiple drink vessels.' },
+];
+
+let eqBudgetMax = 35000;
+function renderEquipment(filter='all') {
+  const items = filter === 'all' ? EQUIPMENT : EQUIPMENT.filter(e => e.cat === filter);
+  document.getElementById('eqGrid').innerHTML = items.map(e => {
+    const badges = [];
+    if (e.shotsPerHour > 0) badges.push(`<span class="eq-badge">${e.shotsPerHour} shots/hr</span>`);
+    if (e.pourSlots    > 0) badges.push(`<span class="eq-badge">${e.pourSlots} pour-over slots</span>`);
+    if (e.batchLiters  > 0) badges.push(`<span class="eq-badge">${Math.round(e.batchLiters * 4.2)} cups/batch</span>`);
+    if (e.steamWands   > 0) badges.push(`<span class="eq-badge">${e.steamWands} steam wand${e.steamWands>1?'s':''}</span>`);
+    if (e.posTerminals > 0) badges.push(`<span class="eq-badge">${e.posTerminals} terminal${e.posTerminals>1?'s':''}</span>`);
+    return `<div class="eq-card ${e.selected ? 'selected' : ''}" onclick="toggleEq('${e.id}')">
+      <div class="eq-icon">${e.icon}</div>
+      <div class="eq-name">${e.name}</div>
+      <div class="eq-sub">${e.sub}</div>
+      ${badges.length ? `<div class="eq-badges">${badges.join('')}</div>` : ''}
+      <div class="eq-role">${e.role}</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:8px">
+        <div class="eq-price">$${e.price.toLocaleString()}</div>
+        <div class="eq-range">${e.range}</div>
+      </div>
+    </div>`;
+  }).join('');
+  updateEqTotal();
+}
+
+function toggleEq(id) {
+  const e = EQUIPMENT.find(e => e.id === id);
+  e.selected = !e.selected;
+  renderEquipment();
+  calcFin();
+  calcOps();
+}
+
+function updateEqTotal() {
+  const total = EQUIPMENT.filter(e => e.selected).reduce((s, e) => s + e.price, 0);
+  const pct   = Math.min(100, Math.round(total / eqBudgetMax * 100));
+  document.getElementById('eqSpend').textContent = '$' + total.toLocaleString();
+  document.getElementById('eqBar').style.width = pct + '%';
+  document.getElementById('eqBar').className = 'budget-bar-fill' + (total > eqBudgetMax ? ' over' : '');
+}
+
+function updateEqBudget(el) {
+  eqBudgetMax = parseInt(el.value);
+  document.getElementById('eqBudget').textContent = '$' + eqBudgetMax.toLocaleString();
+  updateEqTotal();
+}
+
+function filterEq(cat, el) {
+  document.querySelectorAll('#page-equipment .filter-row .zone-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderEquipment(cat);
+}
+
+// ── Furniture ─────────────────────────────────────────────────
+const FURNITURE = [
+  { id:'f1', name:'Solid oak communal table',  cat:'tables',   icon:'⊡', sub:'8-person · 96"',      price:1800, range:'$1.5k–$2.2k', selected:false },
+  { id:'f2', name:'Marble cafe tables (×6)',   cat:'tables',   icon:'⊡', sub:'24" round, 2-seater', price:1440, range:'$240ea', selected:true },
+  { id:'f3', name:'Windsor chairs (×18)',      cat:'seating',  icon:'⊟', sub:'Solid wood',          price:2340, range:'$130ea', selected:false },
+  { id:'f4', name:'Bentwood chairs (×18)',     cat:'seating',  icon:'⊟', sub:'Classic cafe style',  price:1620, range:'$90ea', selected:true },
+  { id:'f5', name:'Bar stools (×6)',           cat:'seating',  icon:'⊟', sub:'Counter height',      price:780,  range:'$130ea', selected:true },
+  { id:'f6', name:'Lounge sofa set',           cat:'seating',  icon:'⊟', sub:'2-seater + armchair', price:2200, range:'$1.8k–$2.5k', selected:false },
+  { id:'f7', name:'Custom espresso bar',       cat:'bar',      icon:'⬜', sub:'10ft walnut millwork', price:6500, range:'$5k–$9k', selected:false },
+  { id:'f8', name:'Floating shelving unit',    cat:'bar',      icon:'⬜', sub:'Retail + display wall', price:950, range:'$800–$1.2k', selected:true },
+  { id:'f9', name:'Edison pendant lights ×8', cat:'lighting', icon:'◎', sub:'Warm 2700K cluster',  price:640,  range:'$80ea', selected:true },
+  { id:'f10',name:'Track lighting system',     cat:'lighting', icon:'◎', sub:'Directional art/bar', price:1200, range:'$900–$1.5k', selected:false },
+  { id:'f11',name:'Ethiopian art prints ×4',  cat:'decor',    icon:'◈', sub:'Framed 24×36" canvas', price:480, range:'$120ea', selected:true },
+  { id:'f12',name:'Coffee sack wall display',  cat:'decor',    icon:'◈', sub:'Burlap, vintage crates', price:220, range:'$150–$300', selected:false },
+  { id:'f13',name:'Living plant wall',         cat:'decor',    icon:'◈', sub:'Preserved moss + succulents', price:850, range:'$600–$1.1k', selected:false },
+];
+
+let furnBudgetMax = 15000;
+function renderFurniture(filter='all') {
+  const items = filter === 'all' ? FURNITURE : FURNITURE.filter(f => f.cat === filter);
+  document.getElementById('furnGrid').innerHTML = items.map(f => `
+    <div class="eq-card ${f.selected ? 'selected' : ''}" onclick="toggleFurn('${f.id}')">
+      <div class="eq-icon">${f.icon}</div>
+      <div class="eq-name">${f.name}</div>
+      <div class="eq-sub">${f.sub}</div>
+      <div class="eq-price">$${f.price.toLocaleString()}</div>
+      <div class="eq-range">${f.range}</div>
+    </div>
+  `).join('');
+  updateFurnTotal();
+}
+
+function toggleFurn(id) {
+  const f = FURNITURE.find(f => f.id === id);
+  f.selected = !f.selected;
+  renderFurniture();
+  calcFin();
+}
+
+function updateFurnTotal() {
+  const total = FURNITURE.filter(f => f.selected).reduce((s, f) => s + f.price, 0);
+  const pct   = Math.min(100, Math.round(total / furnBudgetMax * 100));
+  document.getElementById('furnSpend').textContent = '$' + total.toLocaleString();
+  document.getElementById('furnBar').style.width = pct + '%';
+  document.getElementById('furnBar').className = 'budget-bar-fill' + (total > furnBudgetMax ? ' over' : '');
+}
+
+function updateFurnBudget(el) {
+  furnBudgetMax = parseInt(el.value);
+  document.getElementById('furnBudget').textContent = '$' + furnBudgetMax.toLocaleString();
+  updateFurnTotal();
+}
+
+function filterFurn(cat, el) {
+  document.querySelectorAll('#page-furniture .filter-row .zone-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderFurniture(cat);
+}
+
+// ── Financials ────────────────────────────────────────────────
+function calcFin() {
+  const cust   = parseInt(document.getElementById('r-cust').value);
+  const tick   = parseFloat(document.getElementById('r-tick').value);
+  const days   = parseInt(document.getElementById('r-days').value);
+  const rent   = parseInt(document.getElementById('r-rent').value);
+  const staff  = parseInt(document.getElementById('r-staff').value);
+  const cogsPct= parseInt(document.getElementById('r-cogs').value) / 100;
+
+  document.getElementById('r-cust-lbl').textContent  = cust;
+  document.getElementById('r-tick-lbl').textContent  = '$' + tick.toFixed(2);
+  document.getElementById('r-days-lbl').textContent  = days;
+  document.getElementById('r-rent-lbl').textContent  = '$' + rent.toLocaleString();
+  document.getElementById('r-staff-lbl').textContent = staff;
+  document.getElementById('r-cogs-lbl').textContent  = Math.round(cogsPct * 100) + '%';
+
+  const rev    = Math.round(cust * tick * days);
+  const cogs   = Math.round(rev * cogsPct);
+  const labor  = Math.round(staff * 1800 + staff * 350);
+  const util   = 1100;
+  const misc   = 600;
+  const total  = cogs + labor + rent + util + misc;
+  const profit = rev - total;
+
+  document.getElementById('f-rev').textContent   = '$' + rev.toLocaleString();
+  document.getElementById('f-cost').textContent  = '$' + total.toLocaleString();
+  document.getElementById('f-cogs').textContent  = '$' + cogs.toLocaleString();
+  document.getElementById('f-labor').textContent = '$' + labor.toLocaleString();
+
+  const profEl = document.getElementById('f-profit');
+  profEl.textContent = (profit >= 0 ? '+' : '') + '$' + profit.toLocaleString();
+  profEl.className   = 'profit-value ' + (profit >= 0 ? 'pos' : 'neg');
+  document.getElementById('profitBox').className = 'profit-indicator ' + (profit >= 0 ? 'positive' : 'negative');
+
+  const eqCost   = EQUIPMENT.filter(e => e.selected).reduce((s, e) => s + e.price, 0);
+  const furnCost = FURNITURE.filter(f => f.selected).reduce((s, f) => s + f.price, 0);
+  const startup  = eqCost + furnCost + 40000;
+  const beven    = profit > 0 ? Math.ceil(startup / profit) : 999;
+  document.getElementById('bevenMonth').textContent = profit > 0 ? beven : '—';
+
+  renderCashflow(profit, startup);
+}
+
+function renderCashflow(monthlyProfit, startup) {
+  const bars = [];
+  let cum = -startup;
+  for (let i = 1; i <= 24; i++) {
+    cum += monthlyProfit;
+    bars.push(cum);
+  }
+  const max = Math.max(...bars.map(Math.abs), 1);
+  const html = `<div style="display:flex;align-items:flex-end;gap:3px;height:70px">
+    ${bars.map((v, i) => {
+      const h  = Math.max(4, Math.round(Math.abs(v) / max * 70));
+      const bg = v >= 0 ? '#4A7050' : '#C0607A';
+      return `<div style="flex:1;height:${h}px;background:${bg};border-radius:2px 2px 0 0;opacity:${0.4 + i/34}" title="Month ${i+1}: $${Math.round(v).toLocaleString()}"></div>`;
+    }).join('')}
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-top:4px"><span>Month 1</span><span>Month 24</span></div>`;
+  document.getElementById('cashflowViz').innerHTML = html;
+}
+
+// ── Full day simulation ───────────────────────────────────────
+async function runFullSim() {
+  const dayType   = document.getElementById('simDayType').value;
+  const feature   = document.getElementById('simFeature').value;
+  const mgMove    = document.getElementById('simManagerMove').value;
+  const cafeName  = document.getElementById('cafeName').value;
+  const selectedBeans = BEANS.filter(b => b.selected).map(b => b.name).join(', ');
+  const seatStyle = document.getElementById('seatStyle')?.value || 'mixed seating';
+  const cust      = document.getElementById('r-cust').value;
+  const tick      = document.getElementById('r-tick').value;
+
+  document.getElementById('simPulse').style.opacity = '1';
+  document.getElementById('simBody').innerHTML = '<div style="display:flex;align-items:center;gap:10px;color:var(--text-3)"><div class="spinner"></div> Simulating your day...</div>';
+
+  const prompt = `You are simulating a full day at ${cafeName}, a specialty Ethiopian single-origin coffee cafe.
+
+Setup:
+- Day type: ${dayType}
+- Featured today: ${feature}
+- Beans on menu: ${selectedBeans}
+- Seating: ${seatStyle}
+- Expected customers: ~${cust}/day · avg ticket ~$${tick}
+- Manager/barista move: "${mgMove}"
+
+Please write a vivid simulation structured as:
+
+**Morning brief (7am)**
+A short paragraph describing the setup, your first decisions as manager, and initial vibe.
+
+**Rush hour (8–10am)**
+Describe 2-3 specific customer interactions. Include what they ordered, how they reacted to your Ethiopian beans, any friction or delight moments.
+
+**Midday check-in**
+Revenue so far (estimate), any operational challenges, a decision you had to make.
+
+**Customer reviews (3 guests)**
+For each: name, brief profile, star rating (/5), 1-2 sentence review. Be honest — not everyone will be 5 stars.
+
+**End of day summary**
+Total estimated revenue, what worked, what to improve tomorrow, and one specific thing to change about the bean selection or pricing.
+
+Keep it grounded, realistic, and specific to an Ethiopian specialty coffee cafe.`;
+
+  try {
+    const res = await fetch('/api/simulate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1200,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      const errMsg = data?.error?.message || `API error ${res.status}`;
+      document.getElementById('simBody').innerHTML = `<span style="color:#C0607A">API error: ${errMsg}</span>`;
+      document.getElementById('simPulse').style.opacity = '0';
+      return;
+    }
+    const text = data.content?.[0]?.text || 'No response.';
+    document.getElementById('simBody').innerHTML = formatSimOutput(text);
+    document.getElementById('simPulse').style.opacity = '0';
+    const dayNum = parseInt(document.getElementById('simDay').textContent.replace('Day ','')) + 1;
+    document.getElementById('simDay').textContent = 'Day ' + dayNum;
+  } catch (e) {
+    document.getElementById('simBody').innerHTML = `<span style="color:#C0607A">Simulation error: ${e.message}</span>`;
+    document.getElementById('simPulse').style.opacity = '0';
+  }
+}
+
+function formatSimOutput(text) {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n\n/g, '</p><p style="margin-bottom:12px">')
+    .replace(/\n/g, '<br>')
+    .replace(/^/, '<p style="margin-bottom:12px">')
+    .replace(/$/, '</p>');
+}
+
+// ── Throughput & Capacity calculator ─────────────────────────
+function calcOps() {
+  const staff = parseInt(document.getElementById('r-staff')?.value || 3);
+
+  // Drink mix
+  const espPct   = parseInt(document.getElementById('ops-espPct')?.value  || 50) / 100;
+  const pourPct  = parseInt(document.getElementById('ops-pourPct')?.value  || 30) / 100;
+  const batchPct = parseInt(document.getElementById('ops-batchPct')?.value || 20) / 100;
+  document.getElementById('ops-espPct-lbl').textContent   = Math.round(espPct   * 100) + '%';
+  document.getElementById('ops-pourPct-lbl').textContent  = Math.round(pourPct  * 100) + '%';
+  document.getElementById('ops-batchPct-lbl').textContent = Math.round(batchPct * 100) + '%';
+
+  const sel = EQUIPMENT.filter(e => e.selected);
+
+  // ── Espresso throughput ──────────────────────────────────────
+  const espMachines = sel.filter(e => e.shotsPerHour > 0);
+  const totalShotsHr = espMachines.reduce((s, e) => s + e.shotsPerHour, 0);
+  const steamWands   = espMachines.reduce((s, e) => s + e.steamWands, 0);
+  // Each latte needs ~30s steam time on top of shot; with N wands, milk steaming
+  // can be parallelised. Realistic: 1 wand = 30 lattes/hr, 2 wands = 55 lattes/hr
+  const latteCapHr   = steamWands >= 2 ? 55 : steamWands === 1 ? 30 : 0;
+  const espEl = document.getElementById('ops-shotsHr');
+  const espSub = document.getElementById('ops-shotsHrSub');
+  const espDetail = document.getElementById('ops-espDetail');
+  if (totalShotsHr > 0) {
+    espEl.textContent = totalShotsHr;
+    espSub.textContent = 'shots per hour (realistic)';
+    const machineNames = espMachines.map(e => e.name).join(', ');
+    espDetail.innerHTML = `<strong>${machineNames}</strong><br>`
+      + `${steamWands} steam wand${steamWands !== 1 ? 's' : ''} → up to ${latteCapHr} milk drinks/hr<br>`
+      + `Each shot: ~28s pull + purge + dose. Double shot drinks counted as 2.`;
+  } else {
+    espEl.textContent = '0';
+    espSub.textContent = 'no espresso machine selected';
+    espDetail.innerHTML = 'Select an espresso machine in the Equipment tab.';
+  }
+
+  // ── Pour-over throughput ─────────────────────────────────────
+  const pourItems = sel.filter(e => e.pourSlots > 0);
+  const totalPourSlots = pourItems.reduce((s, e) => s + e.pourSlots, 0);
+  // V60: 3.5 min/cup, Chemex: 4 min for 2 cups. One barista can stagger N brewers.
+  // With S baristas: pourBaristas = min(staff, ceil(totalPourSlots/3))
+  const pourBaristas = Math.min(staff, Math.max(1, Math.ceil(totalPourSlots / 3)));
+  // Each position cycles every ~3.5 min = 17 cups/hr/position if barista attended
+  const pourCupsHr = totalPourSlots > 0
+    ? Math.round(Math.min(totalPourSlots, pourBaristas * 3) * (60 / 3.75))
+    : 0;
+
+  const batchItems = sel.filter(e => e.batchLiters > 0);
+  const batchCupsHr = batchItems.reduce((s, e) => s + Math.round(e.batchLiters * 4.2 * (60/6)), 0);
+
+  const pourEl     = document.getElementById('ops-pourHr');
+  const pourSub    = document.getElementById('ops-pourHrSub');
+  const pourDetail = document.getElementById('ops-pourDetail');
+  if (pourCupsHr + batchCupsHr > 0) {
+    pourEl.textContent = pourCupsHr + batchCupsHr;
+    pourSub.textContent = 'filter coffee cups per hour';
+    let detail = '';
+    if (pourCupsHr > 0)  detail += `${totalPourSlots} pour-over slot${totalPourSlots!==1?'s':''} → ~${pourCupsHr} cups/hr (${pourBaristas} barista${pourBaristas!==1?'s':''} staggering brews)<br>`;
+    if (batchCupsHr > 0) detail += `Batch brewer → ~${batchCupsHr} cups/hr (pre-brewed, no per-order wait)`;
+    pourDetail.innerHTML = detail;
+  } else {
+    pourEl.textContent = '0';
+    pourSub.textContent = 'no pour-over or batch equipment';
+    pourDetail.innerHTML = 'Add Chemex, V60, or Fetco batch brewer in Equipment.';
+  }
+
+  // ── Wait time model ───────────────────────────────────────────
+  const custPerHr = Math.round(parseInt(document.getElementById('r-cust')?.value || 80) / 8); // spread over 8 hrs
+  const peakCustHr = Math.round(custPerHr * 2.2); // peak hour = ~2.2× average
+
+  // Weighted service time (seconds)
+  const espTimeSec   = 55;   // shot + steam if needed, avg
+  const pourTimeSec  = 210;  // 3.5 min avg pour-over
+  const batchTimeSec = 15;   // scoop from airpot
+  const weightedSec = espPct * espTimeSec + pourPct * pourTimeSec + batchPct * batchTimeSec;
+
+  // Total service capacity: staff × 3600 / weighted_service_time
+  const serviceCap = staff > 0 ? Math.round(staff * 3600 / weightedSec) : 0;
+
+  // POS bottleneck: each terminal handles ~45 orders/hr
+  const terminals = sel.reduce((s, e) => s + e.posTerminals, 0);
+  const posCap = terminals > 0 ? terminals * 45 : 999;
+
+  // Effective cap is minimum of service and POS
+  const effectiveCap = Math.min(serviceCap, posCap);
+
+  // Simple M/M/1 queue approximation: wait = ρ/(μ-λ) * service_time
+  // λ = arrival rate, μ = service rate, ρ = utilisation
+  const lambda = peakCustHr / 60; // per minute
+  const mu     = effectiveCap > 0 ? effectiveCap / 60 : 0.01;
+  const rho    = lambda / mu;
+  let waitMin;
+  if (rho >= 0.98) {
+    waitMin = 15; // saturated queue
+  } else {
+    waitMin = Math.round((rho / (1 - rho)) * (weightedSec / 60) * 10) / 10;
+    waitMin = Math.max(0.5, Math.min(waitMin, 15));
+  }
+
+  const waitEl     = document.getElementById('ops-waitTime');
+  const waitFill   = document.getElementById('ops-waitFill');
+  const waitDetail = document.getElementById('ops-waitDetail');
+  waitEl.textContent = waitMin.toFixed(1);
+  const waitColor = waitMin <= 2 ? '#4A7050' : waitMin <= 4 ? '#C4922A' : '#C0607A';
+  waitEl.style.color = waitColor;
+  const waitPct = Math.min(100, Math.round(waitMin / 8 * 100));
+  waitFill.style.width   = waitPct + '%';
+  waitFill.style.background = waitColor;
+  const bottleneck = serviceCap < posCap ? `barista capacity (${staff} staff)` : `POS terminals (${terminals})`;
+  waitDetail.innerHTML = `Peak hour: ~${peakCustHr} customers/hr · Effective capacity: ${effectiveCap} orders/hr<br>`
+    + `Bottleneck: ${bottleneck} · Utilisation: ${Math.round(rho * 100)}%<br>`
+    + (rho > 0.8 ? '<strong style="color:#C0607A">Warning: queue will build rapidly above 80% utilisation</strong>' : 'Queue is manageable at current settings');
+
+  // ── Max occupancy ─────────────────────────────────────────────
+  // Seating zones: 20 sqft/person. Standing/bar: 15 sqft/person. WC not counted.
+  const SEAT_SQFT   = 20;  // IBC fire code seated
+  const STAND_SQFT  = 15;  // standing / bar
+
+  let seatedOcc = 0, standingOcc = 0, zoneRows = '';
+  if (typeof zones !== 'undefined' && zones.length > 0) {
+    zones.forEach(z => {
+      const sqft = Math.round(z.w * z.h * SQFT_PER_PX);
+      const t    = (ZONE_TYPES[z.type] || {}).label || z.type;
+      let people = 0, note = '';
+      if (['seating','lounge'].includes(z.type)) {
+        people = Math.floor(sqft / SEAT_SQFT);
+        seatedOcc += people;
+        note = `${sqft} sqft ÷ ${SEAT_SQFT} sqft/person`;
+      } else if (['bar','window'].includes(z.type)) {
+        people = Math.floor(sqft / STAND_SQFT);
+        standingOcc += people;
+        note = `${sqft} sqft ÷ ${STAND_SQFT} sqft/person (bar standing)`;
+      } else if (['retail'].includes(z.type)) {
+        people = Math.floor(sqft / STAND_SQFT * 0.5); // half capacity for retail browsing
+        standingOcc += people;
+        note = `${sqft} sqft · retail browsing (~50% density)`;
+      } else {
+        note = `${sqft} sqft · not counted toward occupancy`;
+      }
+      const statusColor = people > 0 ? 'var(--sage)' : 'var(--text-3)';
+      zoneRows += `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--border)">
+        <div>
+          <span style="font-weight:500">${t}</span>
+          <span style="font-size:11px;color:var(--text-3);margin-left:8px">${note}</span>
+        </div>
+        <span style="font-weight:500;color:${statusColor}">${people > 0 ? people + ' people' : '—'}</span>
+      </div>`;
+    });
+    const totalOcc = seatedOcc + standingOcc;
+    document.getElementById('ops-maxOcc').textContent = totalOcc;
+    document.getElementById('ops-occDetail').innerHTML =
+      `${seatedOcc} seated (20 sqft/person) + ${standingOcc} at bar / standing (15 sqft/person)<br>`
+      + `<span style="color:var(--text-3);font-size:10px">IBC fire code occupancy load factors</span>`;
+    document.getElementById('ops-zoneBreakdown').innerHTML = zoneRows
+      + `<div style="display:flex;justify-content:space-between;font-weight:500;padding:8px 0 0">
+           <span>Total max occupancy</span><span style="color:var(--roast)">${totalOcc} people</span>
+         </div>`;
+  } else {
+    document.getElementById('ops-maxOcc').textContent = '—';
+    document.getElementById('ops-occDetail').innerHTML = 'Go to Interior Layout and place zones to calculate.';
+    document.getElementById('ops-zoneBreakdown').innerHTML = 'Load the Interior Layout tab and place zones to see occupancy calculations here.';
+  }
+
+  // ── Summary table ─────────────────────────────────────────────
+  const totalCap = espPct > 0 ? (totalShotsHr > 0 ? Math.round(totalShotsHr / (espPct > 0 ? (1.3 * espPct) : 1)) : 0) : 999;
+  const rows = [
+    {
+      type: 'Espresso drinks',
+      timeSec: espTimeSec, maxHr: totalShotsHr > 0 ? Math.round(totalShotsHr / 1.3) : 0,
+      limit: espMachines.length > 0 ? espMachines.map(e=>e.name).join(', ') : 'No machine selected',
+      ok: totalShotsHr > 0
+    },
+    {
+      type: 'Pour-over (V60/Chemex)',
+      timeSec: 210, maxHr: pourCupsHr,
+      limit: pourItems.length > 0 ? `${totalPourSlots} slots` : 'No pour-over equipment',
+      ok: pourCupsHr > 0
+    },
+    {
+      type: 'Batch / drip coffee',
+      timeSec: 15, maxHr: batchCupsHr,
+      limit: batchItems.length > 0 ? batchItems.map(e=>e.name).join(', ') : 'No batch brewer',
+      ok: batchCupsHr > 0
+    },
+    {
+      type: 'POS / checkout',
+      timeSec: 48, maxHr: posCap < 999 ? posCap : 0,
+      limit: terminals > 0 ? `${terminals} terminal${terminals!==1?'s':''}` : 'No POS selected',
+      ok: terminals > 0
+    },
+  ];
+  document.getElementById('ops-tableBody').innerHTML = rows.map(r => `
+    <tr style="border-bottom:0.5px solid var(--border)">
+      <td style="padding:8px 10px">${r.type}</td>
+      <td style="text-align:right;padding:8px 10px;color:var(--text-2)">${r.timeSec < 60 ? r.timeSec + 's' : (r.timeSec/60).toFixed(1) + ' min'}</td>
+      <td style="text-align:right;padding:8px 10px;font-weight:500">${r.maxHr > 0 ? r.maxHr : '—'}</td>
+      <td style="text-align:right;padding:8px 10px;font-size:11px;color:var(--text-3)">${r.limit}</td>
+      <td style="text-align:right;padding:8px 10px">
+        <span style="font-size:10px;padding:2px 8px;border-radius:10px;background:${r.ok ? 'var(--sage-lt)' : '#FDE8F0'};color:${r.ok ? 'var(--sage)' : '#C0607A'};font-weight:500">
+          ${r.ok ? 'ready' : 'missing'}
+        </span>
+      </td>
+    </tr>`).join('');
+}
+
+// ── API key helpers ───────────────────────────────────────────
+function getApiKey() {
+  return document.getElementById('apiKeyInput')?.value?.trim() || '';
+}
+
+function updateApiKeyStatus(val) {
+  const el = document.getElementById('apiKeyStatus');
+  if (!el) return;
+  if (val.startsWith('sk-ant-') && val.length > 20) {
+    el.textContent = 'key set ✓';
+    el.style.color = '#7FAA70';
+  } else if (val.length > 0) {
+    el.textContent = 'invalid format';
+    el.style.color = '#C0607A';
+  } else {
+    el.textContent = 'needed for simulations';
+    el.style.color = 'rgba(250,247,242,.4)';
+  }
+}
+
+// ── Init ──────────────────────────────────────────────────────
+renderBeans();
+renderEquipment();
+renderFurniture();
+calcFin();
+calcOps();
+// Init canvas after DOM is ready
+window.addEventListener('load', () => {
+  if(document.getElementById('floorCanvas')) {
+    initCanvas();
+    window.addEventListener('resize', resizeCanvas);
+  }
+  // Recalculate ops whenever zones change (after canvas init)
+  const origDraw = window.draw;
+  if (typeof origDraw === 'function') {
+    window.draw = function() { origDraw(); calcOps(); };
+  }
+});
+</script>
+</body>
+</html>
